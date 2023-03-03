@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+	<header>
+		<div class="header-image">
+			<img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo">
+		</div>
+	</header>
+	<form method="POST" class="selection-grid">
+		<!-- Selection box 1 -->
+		<div class="selection-box">
+			<label for="selection1" class="selection-label">Selection 1:</label>
+			<select id="selection1" name="selection1">
+				<option value="option1">Option 1</option>
+				<option value="option2">Option 2</option>
+				<option value="option3">Option 3</option>
+			</select>
+		</div>
+		<!-- Selection box 2 -->
+		<div class="selection-box">
+			<label for="selection2" class="selection-label">Selection 2:</label>
+			<select id="selection2" name="selection2">
+				<option value="option1">Option 1</option>
+				<option value="option2">Option 2</option>
+				<option value="option3">Option 3</option>
+			</select>
+		</div>
+		<!-- Selection box 3 -->
+		<div class="selection-box">
+			<label for="selection3" class="selection-label">Selection 3:</label>
+			<select id="selection3" name="selection3">
+				<option value="option1">Option 1</option>
+				<option value="option2">Option 2</option>
+				<option value="option3">Option 3</option>
+			</select>
+		</div>
+		<input type="submit" value="Submit" class="submit-button">
+	</form>
+	{% if selections|length > 0 %}
+		<H2>Selections:</H2>
+		{% for s in selections %}
+			<p>{{s}}</p>
+		{% endfor %}
+	{% endif %}
+</body>
+</html>
