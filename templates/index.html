@@ -24,7 +24,7 @@
 	<!-- main input form-->
 	<div class="card text-center">
 		<div class="card-body", id="material">
-			<title>[naam]_[kenmerk]_[toepassing]</title>
+			<h1>{{materiaal}}</h1>
 		</div>
 	</div>
 
@@ -116,6 +116,7 @@
 								<td class="align-middle">{{s}}</td>
 								<td>
 									<a href="/del/{{ns.c}}" title="Delete" class="text-dark"><i class="fa-regular fa-trash-can"></i></a>
+									<a href="/copy/{{ns.c}}" title="Delete" class="text-dark"><i class="fa-regular fa-clipboard"></i></a>
 								</td>
 							</tr>
 						{% set ns.c = ns.c + 1 %}

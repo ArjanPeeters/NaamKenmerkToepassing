@@ -24,22 +24,26 @@ def index():
 
     if formulier.is_submitted():
 
-        selection_naam = Naam.query.filter_by(id = formulier['naam_selection'].data).first()
+        selection_naam = Naam.query.filter_by(id=formulier['naam_selection'].data).first()
         selection_kenmerk = Kenmerk.query.filter_by(id=formulier['kenmerk_selection'].data).first()
         selection_toepassing = Toepassing.query.filter_by(id=formulier['toepassing_selection'].data).first()
         selections.insert(0, f'{selection_naam.naam}_{selection_kenmerk.kenmerk}_{selection_toepassing.toepassing}')
         kenmerken = [(ken.id, ken.kenmerk) for ken in selection_naam.kenmerken]
         toepassingen = [(toe.id, toe.toepassing) for toe in selection_naam.toepassingen]
-
     else:
         kenmerken = [(r[0], r[1]) for r in db.session.query(Kenmerk.id, Kenmerk.kenmerk).all()]
         toepassingen = [(r[0], r[1]) for r in db.session.query(Toepassing.id, Toepassing.toepassing).all()]
+
     namen = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
 
     formulier.naam_selection.choices = namen
+    formulier.naam_selection.default = 0 if not formulier.is_submitted() else formulier['naam_selection'].data - 1
     formulier.kenmerk_selection.choices = kenmerken
+    formulier.kenmerk_selection.default = 0 if not formulier.is_submitted() else formulier['kenmerk_selection'].data - 1
     formulier.toepassing_selection.choices = toepassingen
-    return render_template('index.html', formulier=formulier, selections=selections)
+    formulier.toepassing_selection.default = 0 if not formulier.is_submitted() else formulier['toepassing_selection'].data - 1
+    materiaal = selections[0] if len(selections) > 0 else 'ntb_ntb_ntb'
+    return render_template('index.html', formulier=formulier, selections=selections, materiaal=materiaal)
 
 
 @app.route('/naam/<num>')
@@ -65,10 +69,15 @@ def material():
 def delete_item(_index):
     if _index.isdigit():
         del selections[int(_index)]
-        return redirect(url_for('index'))
     else:
         print(_index, 'is of type', type(_index), 'not int')
+    return redirect(url_for('index'))
 
+
+@app.route('/copy/<_index>')
+def copy_item(_index):
+    print(_index)
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
