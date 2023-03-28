@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, request
+from flask import Flask, render_template, request, jsonify, request, redirect, url_for
 from flask_wtf import Form
 from wtforms import SelectField
 from flask_bootstrap import Bootstrap
@@ -44,7 +44,6 @@ def index():
 
 @app.route('/naam/<num>')
 def update(num):
-    print('naam', num)
     filter_naam = Naam.query.filter_by(id=num).first()
     print(filter_naam.naam)
     kenmerken = [{'id': k.id, 'kenmerk': k.kenmerk} for k in filter_naam.kenmerken]
@@ -60,6 +59,16 @@ def material():
     t = Toepassing.query.filter_by(id=request.args.get('toepassing', default=" ", type=int)).first()
 
     return jsonify({'material': f'{n.naam}_{k.kenmerk}_{t.toepassing}'})
+
+
+@app.route('/del/<_index>')
+def delete_item(_index):
+    if _index.isdigit():
+        del selections[int(_index)]
+        return redirect(url_for('index'))
+    else:
+        print(_index, 'is of type', type(_index), 'not int')
+
 
 
 if __name__ == '__main__':
