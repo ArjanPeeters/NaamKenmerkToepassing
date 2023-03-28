@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <title>Naam Kenmerk Toepassing</title>
 	<!-- bootstrap -->
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -13,12 +16,19 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 	<header>
 		<div class="header-image">
-			<img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo">
+			<p style="text-align:center;"><img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo"></p>
 		</div>
 	</header>
 
-	<div class="row g-3">
-		<form method="POST" class="row g-3", action="{{url_for('index')}}">
+	<!-- main input form-->
+	<div class="card text-center">
+		<div class="card-body", id="material">
+			<title>[naam]_[kenmerk]_[toepassing]</title>
+		</div>
+	</div>
+
+	<form method="POST" class="row g-3", action="{{url_for('index')}}">
+		<div id="changeListener" class="row g-3">
 			{{formulier.csrf_token}}
 			<div class="col-md-1"></div>
 			<div class="col-md-3">
@@ -33,17 +43,19 @@
 			{{formulier.toepassing_selection.label(class="form-label")}}
 			{{formulier.toepassing_selection(class="form-control")}}
 			</div>
-			<div class="col-md-1">
-				<input type="submit" value="Submit" class="submit-button">
+			<div class="col-auto">
+				<button type="submit" class="btn btn-outline-primary"><span class="align-bottom"></span>Submit</span></button>
 			</div>
 			<div class="col-md-1"></div>
+		</div>
+	</form>
 
-		</form>
-	</div>
+	<!-- JS to change selections of 2nd and 3rd input select by the first -->
 	<script>
 		let naam_select = document.getElementById('naam_selection');
 		let kenmerk_select = document.getElementById('kenmerk_selection');
 		let toepassing_select = document.getElementById('toepassing_selection');
+		let material_select = document.getElementById('material');
 
 		naam_select.onchange = function() {
 			naam = naam_select.value;
@@ -66,14 +78,48 @@
 				})
 			});
 		}
-
+		document.getElementById('changeListener').addEventListener('change', function(event){
+			fetch('/material?' + new URLSearchParams({
+				naam: naam_select.value,
+				kenmerk: kenmerk_select.value,
+				toepassing: toepassing_select.value,
+				})).then(function(response) {
+				response.json().then(function(data) {
+					material_select.innerHTML = '<h1>' + data.material + '</h1>'
+				})
+			});
+		});
 	</script>
 
+	<!-- table if multiple names have been generated -->
 	{% if selections|length > 0 %}
-		<H2>Selections:</H2>
-		{% for s in selections %}
-			<p><code>{{s}}</code></p>
-		{% endfor %}
+		{% set ns = namespace(c = 0) %}
+		<div class="row justify-content-center">
+			<div class="row justify-content-center">
+				<div class="col-auto">
+					<table class="table table-hover"
+						<thead>
+							<tr>
+								<th colspan="2">Selections:</th>
+							</tr>
+						    <tr>
+							    <th scope="col">#</th>
+							    <th scope="col">Naa.K.T.</th>
+						    </tr>
+						</thead>
+						<tbody>
+						{% for s in selections %}
+							<tr>
+								<th scope="row">{{ selections|length - ns.c }}</th>
+								<td>{{s}}</td>
+							</tr>
+						{% set ns.c = ns.c + 1 %}
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
 	{% endif %}
 </body>
 </html>

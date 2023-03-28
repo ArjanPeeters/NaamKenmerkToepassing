@@ -1,38 +1,6 @@
 /* Style to center selection boxes */
 body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    margin: 0;
+    font-family: 'Roboto', sans-serif;
 }
 
 /* Style to display selection boxes using CSS Grid */
-.selection-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-gap: 20px;
-    max-width: 800px;
-    margin-top: 20px;
-}
-
-/* Style for selection box labels */
-.selection-label {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-/* Style for submit button */
-.submit-button {
-    grid-column: 1 / -1; /* Expand to full width of grid */
-    margin-top: 20px;
-}
-
-/* Style for header image */
-.header-image {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    align-items: top;
-}

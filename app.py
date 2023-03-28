@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, request
 from flask_wtf import Form
 from wtforms import SelectField
 from flask_bootstrap import Bootstrap
@@ -27,7 +27,7 @@ def index():
         selection_naam = Naam.query.filter_by(id = formulier['naam_selection'].data).first()
         selection_kenmerk = Kenmerk.query.filter_by(id=formulier['kenmerk_selection'].data).first()
         selection_toepassing = Toepassing.query.filter_by(id=formulier['toepassing_selection'].data).first()
-        selections.append(f'{selection_naam.naam}_{selection_kenmerk.kenmerk}_{selection_toepassing.toepassing}')
+        selections.insert(0, f'{selection_naam.naam}_{selection_kenmerk.kenmerk}_{selection_toepassing.toepassing}')
         kenmerken = [(ken.id, ken.kenmerk) for ken in selection_naam.kenmerken]
         toepassingen = [(toe.id, toe.toepassing) for toe in selection_naam.toepassingen]
 
@@ -45,12 +45,21 @@ def index():
 @app.route('/naam/<num>')
 def update(num):
     print('naam', num)
-    filter_naam = Naam.query.filter_by(id = num).first()
+    filter_naam = Naam.query.filter_by(id=num).first()
     print(filter_naam.naam)
     kenmerken = [{'id': k.id, 'kenmerk': k.kenmerk} for k in filter_naam.kenmerken]
     toepassingen = [{'id': t.id, 'toepassing': t.toepassing} for t in filter_naam.toepassingen]
 
     return jsonify({'kenmerken': kenmerken, 'toepassingen': toepassingen})
+
+
+@app.route('/material')
+def material():
+    n = Naam.query.filter_by(id=request.args.get('naam', default=" ", type=int)).first()
+    k = Kenmerk.query.filter_by(id=request.args.get('kenmerk', default=" ", type=int)).first()
+    t = Toepassing.query.filter_by(id=request.args.get('toepassing', default=" ", type=int)).first()
+
+    return jsonify({'material': f'{n.naam}_{k.kenmerk}_{t.toepassing}'})
 
 
 if __name__ == '__main__':
