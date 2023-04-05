@@ -1,6 +1,4 @@
-function copyToClipboard() {
-    const textbox = document.querySelector('.form-control');
-    textbox.select();
-    document.execCommand('copy');
-    alert('Text copied to clipboard!');
+function copyToClipboard(textToCopy) {
+    navigator.clipboard.writeText(textToCopy.value)
+    console.log(textToCopy.value + " copied to Clipboard")
 }
