@@ -99,11 +99,5 @@ def delete_item(_index):
     return redirect(url_for('index'))
 
 
-@app.route('/copy/<_index>')
-def copy_item(_index):
-    print(_index)
-    return redirect(url_for('index'))
-
-
 if __name__ == '__main__':
     app.run(debug=True)
