@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify, request, redirect, url_for, session
-from flask_wtf import Form
-from wtforms import SelectField
+from wtforms import StringField
 from flask_bootstrap import Bootstrap
 from flask_session import Session
 
@@ -19,15 +18,15 @@ app.app_context().push()
 Session(app)
 
 
-def get_naam(_id: int):
+def get_naam(_id: int) -> 'Naam element':
     return Naam.query.filter_by(id=_id).first()
 
 
-def get_kenmerk(_id: int):
+def get_kenmerk(_id: int) -> 'Kenmerk element':
     return Kenmerk.query.filter_by(id=_id).first()
 
 
-def get_toepassing(_id: int):
+def get_toepassing(_id: int) -> 'Toepassing element':
     return Toepassing.query.filter_by(id=_id).first()
 
 
@@ -96,6 +95,14 @@ def delete_item(_index):
         del session['created_materials'][int(_index)]
     else:
         print(_index, 'is of type', type(_index), 'not int')
+    return redirect(url_for('index'))
+
+
+@app.route('/add_field')
+def add_field():
+    formulier = BaseSelections()
+    count_fields = len(formulier.extra_fields.data)
+    formulier.extra_fields.append_entry(StringField(f'Extra {count_fields}'))
     return redirect(url_for('index'))
 
 
