@@ -18,6 +18,12 @@ app.app_context().push()
 Session(app)
 
 
+def extra_fields():
+    if 'extra_fields' not in session:
+        session['extra_fields'] = {}
+    return True
+
+
 def get_naam(_id: int) -> 'Naam element':
     return Naam.query.filter_by(id=_id).first()
 
@@ -44,7 +50,10 @@ def index():
         session['created_materials'] = []
     created_materials = session['created_materials']
 
-    formulier = BaseSelections()
+    class F(BaseSelections):
+        pass
+
+    formulier = F()
 
     if formulier.is_submitted():
 
@@ -60,6 +69,7 @@ def index():
 
     namen = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
 
+    # fill the form with the data
     formulier.naam_selection.choices = namen
     formulier.naam_selection.default = 0 if not formulier.is_submitted() else formulier['naam_selection'].data - 1
     formulier.kenmerk_selection.choices = kenmerken
@@ -67,6 +77,20 @@ def index():
     formulier.toepassing_selection.choices = toepassingen
     formulier.toepassing_selection.default = 0 if not formulier.is_submitted() else formulier['toepassing_selection'].data - 1
     materiaal = created_materials[0] if len(created_materials) > 0 else 'ntb_ntb_ntb'
+
+    # create extra fields
+    if extra_fields():
+        c = 0
+        for _number, _name in session["extra_fields"].items():
+            formulier.extra_fields.append_entry()
+            formulier.extra_fields[c].label = _name
+            formulier.extra_fields[c].id = _number
+            print(session['extra_fields'])
+            c += 1
+    for i in formulier.extra_fields:
+        print(type(i), i.__dict__)
+    print(formulier.extra_fields.data)
+
     return render_template('index.html', formulier=formulier, selections=created_materials, materiaal=materiaal)
 
 
@@ -100,9 +124,21 @@ def delete_item(_index):
 
 @app.route('/add_field')
 def add_field():
-    formulier = BaseSelections()
-    count_fields = len(formulier.extra_fields.data)
-    formulier.extra_fields.append_entry(StringField(f'Extra {count_fields}'))
+    if len(session['extra_fields']) == 0:
+        c = 1
+    else:
+        c = max(session['extra_fields'].keys()) + 1
+    session['extra_fields'][c] = f'Extra {c}'
+    return redirect(url_for('index'))
+
+
+@app.route('/remove_field/<_index>')
+def remove_field(_index):
+    i = int(_index)
+    print("removing:", i)
+    if extra_fields():
+        if i in session['extra_fields']:
+            del session['extra_fields'][i]
     return redirect(url_for('index'))
 
 

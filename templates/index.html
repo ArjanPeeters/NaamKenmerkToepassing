@@ -23,25 +23,35 @@
 	</header>
 
     <!-- jumbotron -->
-    <div class="container my-5">
+    <div class="container-fluid my-5">
         <div class="p-5 text-center bg-body-tertiary rounded-3">
             <h1 class="text-body-emphasis" id="material">{{ materiaal }}</h1>
             <div class="divider-invisible"></div>
-            <form method="POST" class="d-flex gap-4 mb-7 row-gap-3" action="{{url_for('index')}}" id="material_form">
+                <form method="POST" class="d-flex gap-4 row-gap-2 flex-row flex-wrap" action="{{url_for('index')}}" id="material_form">
                     {{formulier.csrf_token}}
-                <div class="input-group mb-4">
-                    <span class="input-group-text">{{formulier.naam_selection.label}}</span>
-                    {{formulier.naam_selection(class="form-control")}}
-                </div>
-                <div class="input-group mb-4">
-                    <span class="input-group-text">{{formulier.kenmerk_selection.label}}</span>
-                    {{formulier.kenmerk_selection(class="form-control")}}
-                </div>
-                <div class="input-group mb-4">
-                    <span class="input-group-text">{{formulier.toepassing_selection.label}}</span>
-                    {{formulier.toepassing_selection(class="form-control")}}
-                </div>
-            </form>
+                    <div class="input-group mb-4 flex-basis-25 flex-grow-1">
+                        <span class="input-group-text">{{formulier.naam_selection.label}}</span>
+                        {{formulier.naam_selection(class="form-control")}}
+                    </div>
+                    <div class="input-group mb-4 flex-basis-25 flex-grow-1">
+                        <span class="input-group-text">{{formulier.kenmerk_selection.label}}</span>
+                        {{formulier.kenmerk_selection(class="form-control")}}
+                    </div>
+                    <div class="input-group mb-4 flex-basis-25 flex-grow-1">
+                        <span class="input-group-text">{{formulier.toepassing_selection.label}}</span>
+                        {{formulier.toepassing_selection(class="form-control")}}
+                    </div>
+                    {% if formulier.extra_fields | length > 0 %}
+                        {% for extra in formulier.extra_fields %}
+                            <div class="input-group mb-4 flex-basis-25">
+                                <span class="input-group-text">{{ extra.label }}</span>
+                                {{ extra(class="form-control") }}
+                                <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </form>
             <div class="divider-invisible"></div>
             <div class="d-inline-flex gap-4 text-center mb-5">
                 <button class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
