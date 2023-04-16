@@ -25,9 +25,6 @@ html, body {
 }
 
 .flex-basis-25 {
-    flex-basis: 23%;
-}
-
-.test {
-    flex-wrap: wrap;
+    flex-basis: 24%;
+    min-width: 0;
 }

@@ -89,7 +89,7 @@ def index():
             c += 1
     for i in formulier.extra_fields:
         print(type(i), i.__dict__)
-    print(formulier.extra_fields.data)
+    #print(formulier.extra_fields.entries)
 
     return render_template('index.html', formulier=formulier, selections=created_materials, materiaal=materiaal)
 
