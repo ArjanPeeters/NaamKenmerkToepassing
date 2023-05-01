@@ -1,179 +1,151 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <title>Naam Kenmerk Toepassing</title>
-	<!-- bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
 
-<body>
-	<!-- bootstrap -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-	<script src="{{ url_for('static', filename='scripts.js') }}"></script>
-	<header>
-		<div class="header-image">
-			<p style="text-align:center;"><img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo" width="250"></p>
-		</div>
-	</header>
-
-    <!-- jumbotron -->
-    <div class="container my-5">
-        <div class="p-5 text-center bg-body-tertiary rounded-3">
-            <h1 class="text-body-emphasis" id="material">{{ materiaal }}</h1>
-            <div class="divider-invisible"></div>
-                <form method="POST" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-gap-4" action="{{url_for('index')}}" id="material_form" name="material_form">
-                    {{formulier.csrf_token}}
-                    <div class="col flex-grow-1">
-                        <div class="input-group">
-                            <span class="input-group-text">{{formulier.naam_selection.label}}</span>
-                            {{formulier.naam_selection(class="form-control")}}
-                        </div>
+{% extends "base.html"  %}
+{% block content %}
+<!-- jumbotron -->
+<div class="container my-5">
+    <div class="p-5 text-center bg-body-tertiary rounded-3">
+        <h1 class="text-body-emphasis" id="material">{{ materiaal }}</h1>
+        <div class="divider-invisible"></div>
+            <form method="POST" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-gap-4" action="{{url_for('index')}}" id="material_form" name="material_form">
+                {{formulier.csrf_token}}
+                <div class="col flex-grow-1">
+                    <div class="input-group">
+                        <span class="input-group-text">{{formulier.naam_selection.label}}</span>
+                        {{formulier.naam_selection(class="form-control")}}
                     </div>
-                    <div class="col flex-grow-1">
-                        <div class="input-group">
-                            <span class="input-group-text">{{formulier.kenmerk_selection.label}}</span>
-                            {{formulier.kenmerk_selection(class="form-control")}}
-                        </div>
+                </div>
+                <div class="col flex-grow-1">
+                    <div class="input-group">
+                        <span class="input-group-text">{{formulier.kenmerk_selection.label}}</span>
+                        {{formulier.kenmerk_selection(class="form-control")}}
                     </div>
-                    <div class="col flex-grow-1">
-                        <div class="input-group">
-                            <span class="input-group-text">{{formulier.toepassing_selection.label}}</span>
-                            {{formulier.toepassing_selection(class="form-control")}}
-                        </div>
+                </div>
+                <div class="col flex-grow-1">
+                    <div class="input-group">
+                        <span class="input-group-text">{{formulier.toepassing_selection.label}}</span>
+                        {{formulier.toepassing_selection(class="form-control")}}
                     </div>
-                    {% if formulier.extra_fields | length > 0 %}
-                        {% for extra in formulier.extra_fields %}
-                            <div class="col">
-                                <div class="input-group">
-                                    <span class="input-group-text">{{ extra.label }}</span>
-                                    {{ extra(class="form-control") }}
-                                    <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
-                                </div>
+                </div>
+                {% if formulier.extra_fields | length > 0 %}
+                    {% for extra in formulier.extra_fields %}
+                        <div class="col">
+                            <div class="input-group">
+                                <span class="input-group-text">{{ extra.label }}</span>
+                                {{ extra(class="form-control") }}
+                                <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
                             </div>
-                        {% endfor %}
-                    {% endif %}
-                </form>
-            <div class="divider-invisible"></div>
-            <div class="d-inline-flex gap-4 text-center mb-5">
-                <button class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
-                        value="{{ materiaal }}"
-                        onclick="copyToClipboardMaterial()"
-                        id="materialCopyButton"
-                >
-                    Copy
-                </button>
-                <button class="btn btn-outline-secondary btn-lg px-3 rounded-pill"
-                        type="submit"
-                        form="material_form">
-                    Save
-                </button>
-                <a href="/add_field" title="Add Field"
-                   class="btn btn-outline-secondary btn-lg px-3 rounded-pill"
-                   role="button"
-                >
-                    +
-                </a>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </form>
+        <div class="divider-invisible"></div>
+        <div class="d-inline-flex gap-4 text-center mb-5">
+            <button class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
+                    value="{{ materiaal }}"
+                    onclick="copyToClipboardMaterial()"
+                    id="materialCopyButton"
+            >
+                Copy
+            </button>
+            <button class="btn btn-outline-secondary btn-lg px-3 rounded-pill"
+                    type="submit"
+                    form="material_form">
+                Save
+            </button>
+            <a href="/add_field" title="Add Field"
+               class="btn btn-outline-secondary btn-lg px-3 rounded-pill"
+               role="button"
+            >
+                +
+            </a>
+        </div>
+    </div>
+</div>
+<div class="divider-visible"></div>
+
+<!-- JS to change selections of 2nd and 3rd input select by the first -->
+<script>
+    let naam_select = document.getElementById('naam_selection');
+    let kenmerk_select = document.getElementById('kenmerk_selection');
+    let toepassing_select = document.getElementById('toepassing_selection');
+
+    naam_select.onchange = function() {
+        naam = naam_select.value;
+
+        fetch('/naam/' + naam).then(function(response) {
+            response.json().then(function(data) {
+                let kenmerkHTML = '';
+                let toepassingHTML = '';
+
+                for (let kenm of data.kenmerken) {
+                    kenmerkHTML += '<option value="' + kenm.id + '">' + kenm.kenmerk + '</option>';
+                }
+                for (let toep of data.toepassingen) {
+                    toepassingHTML += '<option value="' + toep.id + '">' + toep.toepassing + '</option>';
+                }
+
+                kenmerk_select.innerHTML = kenmerkHTML;
+                toepassing_select.innerHTML = toepassingHTML;
+
+            })
+        });
+    }
+
+    const material_form = document.getElementById('material_form')
+
+    material_form.addEventListener('change', function() {
+        console.log('change detected')
+        let material_name = document.getElementById('material');
+        let extra_field_data = {}
+        let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"]')
+        console.log(get_extra_fields)
+        for (let _item of get_extra_fields) {
+            console.log(_item.id, _item.name, _item.value);
+            extra_field_data[_item.name] = _item.value;
+        }
+        console.log(extra_field_data)
+        fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
+            response.json().then(function(return_data) {
+                material_name.innerText = return_data.material
+                console.log('finally Success!')
+            })
+        });
+    });
+
+
+</script>
+
+<!-- table if multiple names have been generated -->
+{% if selections|length > 0 %}
+    {% set ns = namespace(c = 0) %}
+    <div class="row justify-content-center">
+        <div class="row"></div>
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col" class="text-center">Materiaal benaming</th>
+                            <th scope="col">actie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for s in selections %}
+                        <tr>
+                            <th class="align-middle" scope="row">{{ selections|length - ns.c }}</th>
+                            <td class="align-middle">{{s}}</td>
+                            <td>
+                                <a href="/del/{{ns.c}}" title="Delete" class="text-dark-emphasis"><i class="fa-regular fa-trash-can"></i></a>
+                                <button class="btn text-dark-emphasis" title="Copy-to-Clipboard" value="{{s}}" onclick="copyToClipboard(this)"><i class="fa-regular fa-clipboard"></i></button>
+                            </td>
+                        </tr>
+                    {% set ns.c = ns.c + 1 %}
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    <div class="divider-visible"></div>
-
-	<!-- JS to change selections of 2nd and 3rd input select by the first -->
-	<script>
-		let naam_select = document.getElementById('naam_selection');
-		let kenmerk_select = document.getElementById('kenmerk_selection');
-		let toepassing_select = document.getElementById('toepassing_selection');
-
-		naam_select.onchange = function() {
-			naam = naam_select.value;
-
-			fetch('/naam/' + naam).then(function(response) {
-				response.json().then(function(data) {
-					let kenmerkHTML = '';
-					let toepassingHTML = '';
-
-					for (let kenm of data.kenmerken) {
-						kenmerkHTML += '<option value="' + kenm.id + '">' + kenm.kenmerk + '</option>';
-					}
-					for (let toep of data.toepassingen) {
-						toepassingHTML += '<option value="' + toep.id + '">' + toep.toepassing + '</option>';
-					}
-
-					kenmerk_select.innerHTML = kenmerkHTML;
-					toepassing_select.innerHTML = toepassingHTML;
-
-				})
-			});
-		}
-
-        const material_form = document.getElementById('material_form')
-
-        material_form.addEventListener('change', function() {
-            console.log('change detected')
-            let material_name = document.getElementById('material');
-            let extra_field_data = {}
-            let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"]')
-            console.log(get_extra_fields)
-            for (let _item of get_extra_fields) {
-                console.log(_item.id, _item.name, _item.value);
-                extra_field_data[_item.name] = _item.value;
-            }
-            console.log(extra_field_data)
-            fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
-				response.json().then(function(return_data) {
-					material_name.innerText = return_data.material
-                    console.log('finally Success!')
-				})
-			});
-        });
-
-
-	</script>
-
-	<!-- table if multiple names have been generated -->
-	{% if selections|length > 0 %}
-		{% set ns = namespace(c = 0) %}
-		<div class="row justify-content-center">
-            <div class="row"></div>
-			<div class="row justify-content-center">
-				<div class="col-auto">
-					<table class="table table-hover">
-						<thead>
-						    <tr>
-							    <th scope="col">#</th>
-							    <th scope="col" class="text-center">Materiaal benaming</th>
-								<th scope="col">actie</th>
-						    </tr>
-						</thead>
-						<tbody>
-						{% for s in selections %}
-							<tr>
-								<th class="align-middle" scope="row">{{ selections|length - ns.c }}</th>
-								<td class="align-middle">{{s}}</td>
-								<td>
-									<a href="/del/{{ns.c}}" title="Delete" class="text-dark-emphasis"><i class="fa-regular fa-trash-can"></i></a>
-									<button class="btn text-dark-emphasis" title="Copy-to-Clipboard" value="{{s}}" onclick="copyToClipboard(this)"><i class="fa-regular fa-clipboard"></i></button>
-								</td>
-							</tr>
-						{% set ns.c = ns.c + 1 %}
-						{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	{% endif %}
-</body>
-<footer>
-	<p class="text-light" style="text-align:center;">made by:</p>
-	<div class="header-image">
-		<p style="text-align:center;"><img src="static/Logo_BIMnerd.png" alt="BIMnerd Logo" width="200"></p>
-	</div>
-</footer>
-</html>
+{% endif %}
+{% endblock %}
