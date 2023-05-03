@@ -8,3 +8,10 @@ function copyToClipboardMaterial(){
     navigator.clipboard.writeText(textToCopy)
     console.log(textToCopy + " copied to Clipboard")
 }
+
+document.getElementById('save_button').addEventListener(
+    "click", navigator.clipboard.writeText(
+        document.getElementById("material"
+        ).innerText
+    )
+)

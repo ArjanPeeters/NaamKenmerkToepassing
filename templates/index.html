@@ -40,18 +40,12 @@
             </form>
         <div class="divider-invisible"></div>
         <div class="d-inline-flex gap-4 text-center mb-5">
-            <button class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
-                    value="{{ materiaal }}"
-                    onclick="copyToClipboardMaterial()"
-                    id="materialCopyButton"
-            >
-                Copy
-            </button>
             <a href="/add" title="Save"
-               class="btn btn-outline-secondary btn-lg px-3 rounded-pill"
+               class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
                role="button"
+               id="save_button"
             >
-                Save
+                <i class="fa-regular fa-clipboard"></i>&nbsp; + &nbsp;<i class="fa-solid fa-list-ol"></i>
             </a>
             <a href="/add_field" title="Add Field"
                class="btn btn-outline-secondary btn-lg px-3 rounded-pill"
@@ -69,6 +63,7 @@
     let naam_select = document.getElementById('naam_selection');
     let kenmerk_select = document.getElementById('kenmerk_selection');
     let toepassing_select = document.getElementById('toepassing_selection');
+
 
     naam_select.onchange = function() {
         naam = naam_select.value;
@@ -92,8 +87,8 @@
         });
     }
 
-    const material_form = document.getElementById('material_form')
 
+    const material_form = document.getElementById('material_form')
     material_form.addEventListener('change', function() {
         console.log('change detected')
         let material_name = document.getElementById('material');
