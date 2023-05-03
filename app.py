@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap
 from flask_session import Session
 
@@ -140,7 +140,11 @@ def material():
 # adds a material name to the list for when 'save' is selected
 @app.route('/add')
 def add_item():
-    session['created_materials'].insert(0, session['current']['material_name'])
+    if session['current']['material_name'] not in session['created_materials']:
+        session['created_materials'].insert(0, session['current']['material_name'])
+    else:
+        flash(f"{session['current']['material_name']} is al in de lijst opgenomen")
+        print('already in list')
     return redirect(url_for('index'))
 
 
