@@ -1,5 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session, Response
-from wtforms import StringField
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 from flask_bootstrap import Bootstrap
 from flask_session import Session
 
@@ -8,8 +7,11 @@ from forms import BaseSelections
 
 app = Flask(__name__)
 
+# connect the SQL lite db to Flask
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NaamKenmerkToepassing.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# some flask config
 app.config['SECRET_KEY'] = '5097bb62-06fb-4099-8633-78767a79f90b'
 app.config['SESSION_TYPE'] = 'filesystem'
 db.init_app(app)
@@ -17,27 +19,30 @@ Bootstrap(app)
 app.app_context().push()
 Session(app)
 
-current_material = ''
 
-
+# function to check if session cookie contains extra fields key. If not make it and return true
 def extra_fields():
     if 'extra_fields' not in session:
         session['extra_fields'] = {}
     return True
 
 
+# returns the correct naam from the database by id
 def get_naam(_id: int) -> 'Naam element':
     return Naam.query.filter_by(id=_id).first()
 
 
+# returns the correct kenmerk from the database by id
 def get_kenmerk(_id: int) -> 'Kenmerk element':
     return Kenmerk.query.filter_by(id=_id).first()
 
 
+# returns the correct toepassing from the database by id
 def get_toepassing(_id: int) -> 'Toepassing element':
     return Toepassing.query.filter_by(id=_id).first()
 
 
+# create a string with the correct material name
 def create_material(n: int, k: int, t: int, extra: list) -> str:
     n_element = get_naam(n)
     k_element = get_kenmerk(k)
@@ -50,53 +55,21 @@ def create_material(n: int, k: int, t: int, extra: list) -> str:
     print(_string, extra)
     return _string
 
-
+# Main page
 @app.route('/', methods=['GET', 'POST'])
 def index():
 
+    # creates a materials list in the session cookie if not already exits
     if 'created_materials' not in session:
         session['created_materials'] = []
     created_materials = session['created_materials']
 
+    # extra class needed for the forms to work correctly with FieldList
     class F(BaseSelections):
         pass
     formulier = F()
 
-    """if formulier.is_submitted():
-
-        naam_id = formulier['naam_selection'].data
-        kenmerk_id = formulier['kenmerk_selection'].data
-        toepassing_id = formulier['toepassing_selection'].data
-        extra = []
-        for entry in formulier.extra_fields:
-            extra.append(entry.data)
-            print(entry)
-            session['extra_fields'][entry.id.split('-')[-1]]['value'] = entry.data
-
-        materiaal_naam = create_material(n=naam_id, k=kenmerk_id, t=toepassing_id, extra=extra)
-        created_materials.insert(0, materiaal_naam)
-        kenmerken_choices = [(ken.id, ken.kenmerk) for ken in get_naam(naam_id).kenmerken]
-        toepassingen_choices = [(toe.id, toe.toepassing) for toe in get_naam(naam_id).toepassingen]
-    else:
-        search_id = session['naam_selected'] if 'naam_selected' in session else 1
-        print(search_id)
-        kenmerken_choices = [(ken.id, ken.kenmerk) for ken in get_naam(search_id).kenmerken]
-        toepassingen_choices = [(toe.id, toe.toepassing) for toe in get_naam(search_id).toepassingen]
-        materiaal_naam = 'beton_ntb_ntb'
-        
-    namen_choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
-
-    # fill the form with the data
-    formulier.naam_selection.choices = namen_choices
-    formulier.naam_selection.default = 0 if not formulier.is_submitted() else formulier['naam_selection'].data - 1
-    formulier.kenmerk_selection.choices = kenmerken_choices
-    formulier.kenmerk_selection.default = 0 if not formulier.is_submitted() else formulier['kenmerk_selection'].data - 1
-    formulier.toepassing_selection.choices = toepassingen_choices
-    formulier.toepassing_selection.default = 0 if not formulier.is_submitted() else formulier['toepassing_selection'].data - 1
-    
-    """
-
-    print(session)
+    # check if site already in use. If so use last inputs as default else make first choice as default.
     if 'current' in session:
         naam_selection = session['current']['naam_selection']
         formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
@@ -109,19 +82,14 @@ def index():
 
     else:
         formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
-        formulier.naam_selection.data = 0
+        formulier.naam_selection.data = 1
         formulier.kenmerk_selection.choices = [(ken.id, ken.kenmerk) for ken in get_naam(1).kenmerken]
-        formulier.kenmerk_selection.data = 0
+        formulier.kenmerk_selection.data = 1
         formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(1).toepassingen]
-        formulier.toepassing_selection.data = 0
-        materiaal_naam = 'beton_ntb_ntb'
+        formulier.toepassing_selection.data = 1
+        materiaal_naam = create_material(n=1, k=1, t=1, extra=[])
 
-    for i in ['naam', 'kenmerk', 'toepassing']:
-        print(f'default {i}:', formulier[f'{i}_selection'].data)
-        print(f'choices {i}', formulier[f'{i}_selection'].choices)
-
-
-    # create extra fields
+    # create extra fields by looking up how many are needed from the session cookie
     if extra_fields():
         c = 0
         if len(formulier.extra_fields) > 0:
@@ -139,6 +107,7 @@ def index():
     return render_template('index.html', formulier=formulier, selections=created_materials, materiaal=materiaal_naam)
 
 
+# used by JS for getting the available choices when the NAAM selection chainges.
 @app.route('/naam/<num>')
 def update(num):
     filter_naam = Naam.query.filter_by(id=num).first()
@@ -149,6 +118,7 @@ def update(num):
     return jsonify({'kenmerken': kenmerken, 'toepassingen': toepassingen})
 
 
+# used by JS for getting a new material name for when an input in the form changes
 @app.route('/material')
 def material():
     session['current'] = request.args.to_dict()
@@ -167,11 +137,14 @@ def material():
     return jsonify({'material': material_name})
 
 
+# adds a material name to the list for when 'save' is selected
 @app.route('/add')
 def add_item():
     session['created_materials'].insert(0, session['current']['material_name'])
     return redirect(url_for('index'))
 
+
+# deletes an entry from the material names list
 @app.route('/del/<_index>')
 def delete_item(_index):
     if _index.isdigit() and 'created_materials' in session:
@@ -181,6 +154,7 @@ def delete_item(_index):
     return redirect(url_for('index'))
 
 
+# adds an extra entry in the fields session cookie. Later the main index uses it to add an extra input box
 @app.route('/add_field')
 def add_field():
     if len(session['extra_fields']) == 0:
@@ -193,6 +167,7 @@ def add_field():
     return redirect(url_for('index'))
 
 
+# Removes the entry for the extra input field from the session cookie
 @app.route('/remove_field/<_index>')
 def remove_field(_index):
     i = _index
