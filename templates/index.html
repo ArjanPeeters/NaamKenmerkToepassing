@@ -56,7 +56,7 @@
         </div>
     </div>
 </div>
-<div class="divider-visible"></div>
+
 
 <!-- JS to change selections of 2nd and 3rd input select by the first -->
 <script>
@@ -87,6 +87,12 @@
         });
     }
 
+    document.getElementById('save_button').addEventListener(
+        "click", navigator.clipboard.writeText(
+            document.getElementById("material"
+            ).innerText
+        )
+    )
 
     const material_form = document.getElementById('material_form')
     material_form.addEventListener('change', function() {
@@ -111,37 +117,90 @@
 
 </script>
 
-<!-- table if multiple names have been generated -->
 {% if selections|length > 0 %}
-    {% set ns = namespace(c = 0) %}
-    <div class="row justify-content-center">
-        <div class="row"></div>
-        <div class="row justify-content-center">
-            <div class="col-auto">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col" class="text-center">Materiaal benaming</th>
-                            <th scope="col">actie</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for s in selections %}
-                        <tr>
-                            <th class="align-middle" scope="row">{{ selections|length - ns.c }}</th>
-                            <td class="align-middle">{{s}}</td>
-                            <td>
-                                <a href="/del/{{ns.c}}" title="Delete" class="text-dark-emphasis"><i class="fa-regular fa-trash-can"></i></a>
-                                <button class="btn text-dark-emphasis" title="Copy-to-Clipboard" value="{{s}}" onclick="copyToClipboard(this)"><i class="fa-regular fa-clipboard"></i></button>
-                            </td>
-                        </tr>
-                    {% set ns.c = ns.c + 1 %}
-                    {% endfor %}
-                    </tbody>
-                </table>
+    <div class="container my-5">
+        <div class="p-5 text-center bg-body-tertiary rounded-3">
+            <div class="d-inline-flex gap-4 text-center mb-5">
+                <button class="btn btn-outline-light" onclick="downloadCSV()">Save to text</button>
+                <a href="/del_list" class="btn btn-outline-secondary">Delete list</a>
+            </div>
+            <div class="container-lg">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="col">Rij</th>
+                                <th class="col">Materiaal naam</th>
+                                <th class="col">Acties</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Table rows will be created here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        const data_table = {{ selections|tojson }};
+        const numberOfRows = data_table.length;
+
+        function addRowToTable(rowData, rowNum) {
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td class="col text-center align-middle">${rowNum}</td>
+                <td class="col text-center align-middle">${rowData}</td>
+                <td class="col text-center align-middle">
+                    <div class="d-flex justify-content-center  align-items-center">
+                        <a href="/del/${rowNum}" title="Delete" class="text-dark-emphasis"><i class="fa-regular fa-trash-can"></i></a>
+                        <button class="btn text-dark-emphasis" title="Copy-to-Clipboard" value=${rowData} onclick="copyToClipboard(this)"><i class="fa-regular fa-clipboard"></i></button>
+                    </div>
+                </td>
+            `;
+            document.getElementById("table-body").appendChild(newRow);
+        }
+
+        function createTableWithRows() {
+            for (let i = 0; i < numberOfRows; i++) {
+                const rowNum = numberOfRows - i;
+                addRowToTable(data_table[i], rowNum);
+            }
+        }
+
+        createTableWithRows();
+
+        function downloadCSV() {
+            const table = document.querySelector('.table');
+            let csvContent = [];
+            let headerRow = [];
+            table.querySelectorAll('th').forEach(header => {
+                headerRow.push(`"${header.innerText.replace(/"/g, '""')}"`);
+            });
+            headerRow.pop();
+            csvContent.push(headerRow.join(','));
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                let rowData = [];
+                row.querySelectorAll('td:not(:last-child)').forEach(cell => {
+                    rowData.push(`"${cell.innerText.replace(/"/g, '""')}"`);
+                });
+                csvContent.push(rowData.join(','));
+            });
+
+            const csv = csvContent.join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'Materiaalnamen.csv');
+            document.body.appendChild(link);
+            link.click();
+        }
+
+    </script>
 {% endif %}
+
+
 {% endblock %}

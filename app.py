@@ -4,6 +4,7 @@ from flask_session import Session
 
 from dbModels import db, Naam, Kenmerk, Toepassing
 from forms import BaseSelections
+import pprint as pp
 
 app = Flask(__name__)
 
@@ -104,7 +105,11 @@ def index():
             print(session['extra_fields'])
             c += 1
 
-    return render_template('index.html', formulier=formulier, selections=created_materials, materiaal=materiaal_naam)
+    materials_list=[]
+    for i in created_materials:
+        materials_list.append([i])
+
+    return render_template('index.html', formulier=formulier, selections=materials_list, materiaal=materiaal_naam)
 
 
 # used by JS for getting the available choices when the NAAM selection chainges.
@@ -152,11 +157,66 @@ def add_item():
 @app.route('/del/<_index>')
 def delete_item(_index):
     if _index.isdigit() and 'created_materials' in session:
-        del session['created_materials'][int(_index)]
+        real_index = len(session['created_materials']) - int(_index)
+        print('deleting: ', session['created_materials'][real_index])
+        del session['created_materials'][real_index]
     else:
         print(_index, 'is of type', type(_index), 'not int')
     return redirect(url_for('index'))
 
+
+@app.route('/del_list')
+def delete_list():
+    pp.pprint(session['created_materials'])
+    session['created_materials'] = []
+    return redirect((url_for('index')))
+
+
+@app.route('/add_temp_list')
+def temp():
+    session['created_materials'] =\
+        ['organisch_bamboe_profiel',
+         'organisch_bamboe_plaat',
+         'organisch_bamboe_folie',
+         'organisch_bamboe_ntb',
+         'gips_stuc_generiek',
+         'gips_stuc_prefab-element',
+         'gips_anhydriet_prefab-element',
+         'gips_balsa_vulling',
+         'hout_balsa_vulling',
+         'hout_balsa_stam',
+         'hout_eiken_stam',
+         'hout_generiek_tegel',
+         'hout_bilinga_tegel',
+         'hout_bilinga_ntb',
+         'hout_bangkirai_ntb',
+         'hout_bangkirai_schaaldeel',
+         'hout_bangkirai_profiel',
+         'hout_bangkirai_blok',
+         'bitumen_asfalt_bedekking',
+         'gips_generiek_ihw',
+         'gips_generiek_bedekking',
+         'gips_asfalt_bedekking',
+         'bitumen_asfalt_ntb',
+         'steenachtig_kunststeen_klinker_fghgv',
+         'samengesteld_element_hek_fghgv',
+         'isolatie_fenolhars_vulling_fghgv',
+         'isolatie_fenolhars_ntb_fghgv',
+         'isolatie_generiek_ntb_fghgv',
+         'glas_generiek_ntb',
+         'glas_gewapend_ntb',
+         'cement_houtwolcement_ihw',
+         'cement_generiek_ihw_rew',
+         'cement_generiek_blok_rew',
+         'gips_generiek_blok_rew',
+         'gips_generiek_bedekking_rew',
+         'gips_generiek_ihw_test',
+         'gips_gipskarton_ihw_test',
+         'grondstof_aarde_granulaat',
+         'glas_cellulairglas_ntb',
+         'glas_gasbeton_ntb',
+         'beton_gasbeton_ntb']
+    return redirect((url_for('index')))
 
 # adds an extra entry in the fields session cookie. Later the main index uses it to add an extra input box
 @app.route('/add_field')
