@@ -23,8 +23,3 @@ html, body {
     margin-right: auto;
     margin-left: auto;
 }
-
-.flex-basis-25 {
-    flex-basis: 24%;
-    min-width: 0;
-}
