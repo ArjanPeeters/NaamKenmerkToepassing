@@ -2,9 +2,12 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 from flask_bootstrap import Bootstrap
 from flask_session import Session
 
+from google.cloud import secretmanager
+
 from dbModels import db, Naam, Kenmerk, Toepassing
 from forms import BaseSelections
 import pprint as pp
+
 
 app = Flask(__name__)
 
@@ -12,8 +15,16 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///NaamKenmerkToepassing.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+def get_secret(secret_name):
+    client = secretmanager.SecretManagerServiceClient()
+    secret_version_name = f"projects/{client.project}/secrets/{secret_name}/versions/latest"
+    response = client.access_secret_version(request={"name": secret_version_name})
+    return response.payload.data.decode("UTF-8")
+
+
 # some flask config
-app.config['SECRET_KEY'] = '5097bb62-06fb-4099-8633-78767a79f90b'
+app.config['SECRET_KEY'] = get_secret("Flask_Secret_Key")
 app.config['SESSION_TYPE'] = 'filesystem'
 db.init_app(app)
 Bootstrap(app)
