@@ -13,38 +13,41 @@
 </head>
 
 <body>
-	<!-- bootstrap
-	<header>
-		<div class="header-image">
-			<p style="text-align:center;"><img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo" width="250"></p>
-		</div>
-	</header> -->
-<nav class="navbar navbar-expand-lg navbar-light bg-body-tertiary">
-    <div class="container-fluid">
-        <div class="d-flex"></div>
-            <a class="navbar-brand mx-auto" href="https://www.bimloket.nl/p/682/1-NAAKT-Eenduidige-materiaalbenaming" target="_blank">
-                <img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo" width="auto" height="40" class="d-inline-block align-text-top">
-            </a>
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary rounded" aria-label="Thirteenth navbar example">
+
+    <div class="container-fluid" id="NavBar">
+        <div class="collapse navbar-collapse d-lg-flex">
+            <div class="nav-item">
+                <a class="navbar-brand mx-auto" href="https://www.bimnerd.nl" target="_blank">
+                    <img src="static/Logo_BIMnerd.png" alt="Naa.K.T. Logo" width="auto" height="40" class="d-inline-block align-text-top">
+                </a>
+            </div>
         </div>
-        <ul class="navbar-nav flex-row">
+        <ul class="navbar-nav col-lg-6 justify-content-lg-center">
             <li class="nav-item">
-                <a class="nav-link" href="https://github.com/ArjanPeeters/NaamKenmerkToepassing">
-                    <i class="fa-brands fa-square-github"></i>
+                <a class="navbar-brand mx-auto" href="https://www.bimloket.nl/p/682/1-NAAKT-Eenduidige-materiaalbenaming" target="_blank">
+                    <img src="static/Logo_Naakt.png" alt="Naa.K.T. Logo" width="auto" height="50" class="d-inline-block align-text-top">
                 </a>
             </li>
         </ul>
-    </nav>
+        <div class="d-lg-flex col-lg-3 justify-content-lg-end">
+            <div class="nav-item">
+                <a class="nav-link" href="https://github.com/ArjanPeeters/NaamKenmerkToepassing">
+                    <i class="fa-brands fa-square-github fa-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </ul>
+    </div>
 </nav>
+
+
 {% block content %}
 
 {% endblock %}
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 <script src="{{ url_for('static', filename='scripts.js') }}"></script>
-<footer>
-	<p class="text-light" style="text-align:center;">made by:</p>
-	<div class="header-image">
-		<p style="text-align:center;"><img src="static/Logo_BIMnerd.png" alt="BIMnerd Logo" width="200"></p>
-	</div>
-</footer>
+
 </html>
