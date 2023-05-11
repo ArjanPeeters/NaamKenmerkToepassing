@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 def get_secret(secret_name):
     client = secretmanager.SecretManagerServiceClient()
-    secret_version_name = f"projects/{client.project}/secrets/{secret_name}/versions/latest"
+    secret_version_name = f"projects/naamkenmerktoepassing/secrets/{secret_name}/versions/latest"
     response = client.access_secret_version(request={"name": secret_version_name})
     return response.payload.data.decode("UTF-8")
 
