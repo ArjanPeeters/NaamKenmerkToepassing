@@ -30,7 +30,14 @@
                     {% for extra in formulier.extra_fields %}
                         <div class="col">
                             <div class="input-group">
-                                <span class="input-group-text">{{ extra.label }}</span>
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                    {{ extra.label }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li class="dropdown-item">vrij invulveld</li>
+                                    <li class="dropdown-item">nl-sfb tabel 3</li>
+                                    <li class="dropdown-item">ral kleur</li>
+                                </ul>
                                 {{ extra(class="form-control") }}
                                 <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
                             </div>
