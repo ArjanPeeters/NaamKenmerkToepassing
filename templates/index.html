@@ -6,24 +6,24 @@
     <div class="p-5 text-center bg-body-tertiary rounded-3">
         <h1 class="text-body-emphasis" id="material">{{ materiaal }}</h1>
         <div class="divider-invisible"></div>
-            <form method="POST" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-gap-4" action="{{url_for('index')}}" id="material_form" name="material_form">
+            <div method="POST" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-gap-4" action="{{url_for('index')}}" id="material_form" name="material_form">
                 {{formulier.csrf_token}}
                 <div class="col flex-grow-1">
                     <div class="input-group">
-                        <span class="input-group-text">{{formulier.naam_selection.label}}</span>
-                        {{formulier.naam_selection(class="form-control")}}
+                        <span class="input-group-text naam" id="input_naam">{{formulier.naam_selection.label}}</span>
+                        {{formulier.naam_selection(class="form-control naam")}}
                     </div>
                 </div>
                 <div class="col flex-grow-1">
                     <div class="input-group">
-                        <span class="input-group-text">{{formulier.kenmerk_selection.label}}</span>
-                        {{formulier.kenmerk_selection(class="form-control")}}
+                        <span class="input-group-text kenmerk">{{formulier.kenmerk_selection.label}}</span>
+                        {{formulier.kenmerk_selection(class="form-control kenmerk")}}
                     </div>
                 </div>
                 <div class="col flex-grow-1">
                     <div class="input-group">
-                        <span class="input-group-text">{{formulier.toepassing_selection.label}}</span>
-                        {{formulier.toepassing_selection(class="form-control")}}
+                        <span class="input-group-text toepassing">{{formulier.toepassing_selection.label}}</span>
+                        {{formulier.toepassing_selection(class="form-control toepassing")}}
                     </div>
                 </div>
                 {% if formulier.extra_fields | length > 0 %}
@@ -37,7 +37,9 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-            </form>
+            </div>
+
+        </form>
         <div class="divider-invisible"></div>
         <div class="d-inline-flex gap-4 text-center mb-5">
             <a href="/add" title="Save"
