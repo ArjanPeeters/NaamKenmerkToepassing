@@ -4,7 +4,7 @@ from flask_session import Session
 
 from google.cloud import secretmanager
 
-from dbModels import db, Naam, Kenmerk, Toepassing
+from dbModels import db, Naam, Kenmerk, Toepassing, KleurRAL
 from forms import BaseSelections
 import pprint as pp
 
@@ -93,6 +93,7 @@ def index():
         materiaal_naam = session['current']['material_name']
 
     else:
+        session['current'] = {}
         formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
         formulier.naam_selection.data = 1
         formulier.kenmerk_selection.choices = [(ken.id, ken.kenmerk) for ken in get_naam(1).kenmerken]
@@ -100,11 +101,15 @@ def index():
         formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(1).toepassingen]
         formulier.toepassing_selection.data = 1
         materiaal_naam = create_material(n=1, k=1, t=1, extra=[])
+        session['current']['naam_selection'] = 1
+        session['current']['kenmerk_selection'] = 1
+        session['current']['toepassing_selection'] = 1
+        session['current']['material_name'] = materiaal_naam
 
     # create extra fields by looking up how many are needed from the session cookie
     if extra_fields():
         c = 0
-        if len(formulier.extra_fields) > 0:
+        if any(formulier.extra_fields):
             for field in range(len(formulier.extra_fields)):
                 formulier.extra_fields.pop_entry()
         for _number, _item in session["extra_fields"].items():
@@ -142,7 +147,8 @@ def material():
     k = request.args.get('kenmerk_selection', default=1, type=int)
     t = request.args.get('toepassing_selection', default=1, type=int)
     print('args', request.args.to_dict())
-    print(session['extra_fields'])
+    if extra_fields():
+        print(session['extra_fields'])
     extra = []
     for _k, _v in request.args.to_dict().items():
         if _k[:5].lower() == "extra" and len(_v) > 0:
@@ -176,6 +182,7 @@ def delete_item(_index):
     return redirect(url_for('index'))
 
 
+#removes entire material list
 @app.route('/del_list')
 def delete_list():
     pp.pprint(session['created_materials'])
@@ -183,6 +190,31 @@ def delete_list():
     return redirect((url_for('index')))
 
 
+# adds an extra entry in the fields session cookie. Later the main index uses it to add an extra input box
+@app.route('/add_field')
+def add_field():
+    if len(session['extra_fields']) == 0:
+        c = '1'
+    else:
+        _ints = [int(i) for i in session['extra_fields'].keys()]
+        c = str(max(_ints) + 1)
+    session['extra_fields'][c] = {'name': f'extra_fields-{c}',
+                                  'label': f'Extra {c}'}
+    return redirect(url_for('index'))
+
+
+# Removes the entry for the extra input field from the session cookie
+@app.route('/remove_field/<_index>')
+def remove_field(_index):
+    i = _index
+    print("removing:", i)
+    if extra_fields():
+        if i in session['extra_fields']:
+            del session['extra_fields'][i]
+    return redirect(url_for('index'))
+
+
+#add some testing data
 @app.route('/add_temp_list')
 def temp():
     session['created_materials'] =\
@@ -228,29 +260,6 @@ def temp():
          'glas_gasbeton_ntb',
          'beton_gasbeton_ntb']
     return redirect((url_for('index')))
-
-# adds an extra entry in the fields session cookie. Later the main index uses it to add an extra input box
-@app.route('/add_field')
-def add_field():
-    if len(session['extra_fields']) == 0:
-        c = '1'
-    else:
-        _ints = [int(i) for i in session['extra_fields'].keys()]
-        c = str(max(_ints) + 1)
-    session['extra_fields'][c] = {'name': f'extra_fields-{c}',
-                                  'label': f'Extra {c}'}
-    return redirect(url_for('index'))
-
-
-# Removes the entry for the extra input field from the session cookie
-@app.route('/remove_field/<_index>')
-def remove_field(_index):
-    i = _index
-    print("removing:", i)
-    if extra_fields():
-        if i in session['extra_fields']:
-            del session['extra_fields'][i]
-    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
