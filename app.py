@@ -2,6 +2,8 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, s
 from flask_bootstrap import Bootstrap
 from flask_session import Session
 
+from lists import list_of_test_materials
+
 from google.cloud import secretmanager
 
 from dbModels import db, Naam, Kenmerk, Toepassing, Select_RAL, Select_NLSFB
@@ -226,19 +228,19 @@ def add_field():
     return redirect(url_for('index'))
 
 
-# Removes the entry for the extra input field from the session cookie
 @app.route('/remove_field/<_index>')
 def remove_field(_index):
-    i = _index
-    print("removing:", i)
+    """function to remove an extra field when [-] button is selected"""
+    print("removing:", _index)
     if extra_fields():
-        if i in session['extra_fields']:
-            del session['extra_fields'][i]
+        if _index in session['extra_fields']:
+            del session['extra_fields'][_index]
     return redirect(url_for('index'))
 
 
 @app.route('/extrafieldlist/<_index>/<_type>')
 def extra_field_list(_index, _type):
+    """function to change an extra field from an input to something else or back"""
     print("got index: ", _index, 'and type: ', _type)
     current_field = session['extra_fields'][_index]
     current_field['type'] = _type
@@ -261,49 +263,7 @@ def extra_field_list(_index, _type):
 #add some testing data
 @app.route('/add_temp_list')
 def temp():
-    session['created_materials'] =\
-        ['organisch_bamboe_profiel',
-         'organisch_bamboe_plaat',
-         'organisch_bamboe_folie',
-         'organisch_bamboe_ntb',
-         'gips_stuc_generiek',
-         'gips_stuc_prefab-element',
-         'gips_anhydriet_prefab-element',
-         'gips_balsa_vulling',
-         'hout_balsa_vulling',
-         'hout_balsa_stam',
-         'hout_eiken_stam',
-         'hout_generiek_tegel',
-         'hout_bilinga_tegel',
-         'hout_bilinga_ntb',
-         'hout_bangkirai_ntb',
-         'hout_bangkirai_schaaldeel',
-         'hout_bangkirai_profiel',
-         'hout_bangkirai_blok',
-         'bitumen_asfalt_bedekking',
-         'gips_generiek_ihw',
-         'gips_generiek_bedekking',
-         'gips_asfalt_bedekking',
-         'bitumen_asfalt_ntb',
-         'steenachtig_kunststeen_klinker_fghgv',
-         'samengesteld_element_hek_fghgv',
-         'isolatie_fenolhars_vulling_fghgv',
-         'isolatie_fenolhars_ntb_fghgv',
-         'isolatie_generiek_ntb_fghgv',
-         'glas_generiek_ntb',
-         'glas_gewapend_ntb',
-         'cement_houtwolcement_ihw',
-         'cement_generiek_ihw_rew',
-         'cement_generiek_blok_rew',
-         'gips_generiek_blok_rew',
-         'gips_generiek_bedekking_rew',
-         'gips_generiek_ihw_test',
-         'gips_gipskarton_ihw_test',
-         'grondstof_aarde_granulaat',
-         'glas_cellulairglas_ntb',
-         'glas_gasbeton_ntb',
-         'beton_gasbeton_ntb']
-    return redirect((url_for('index')))
+    session['created_materials'] = list_of_test_materials
 
 
 if __name__ == '__main__':
