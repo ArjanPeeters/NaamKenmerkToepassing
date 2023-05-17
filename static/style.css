@@ -16,14 +16,6 @@ html, body {
     height: 2rem;
 }
 
-.container, .container-fluid, .container-lg, .container-md, .container-sm, .container-xl, .container-xxl {
-    width: 100%;
-    padding-right: 2%;
-    padding-left: 2%;
-    margin-right: auto;
-    margin-left: auto;
-}
-
 .naam {
     border-color: #006bb2 !important;
 }
