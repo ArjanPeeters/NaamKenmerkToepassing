@@ -43,7 +43,7 @@ class Toepassing(db.Model):
         return f'Toepassing:{self.toepassing}, namen:{self.namen}'
 
 
-class KleurRAL(db.Model):
+class Select_RAL(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nummer = db.Column(db.String(8), index=True, unique=True)
     r = db.Column(db.Integer)
@@ -54,3 +54,11 @@ class KleurRAL(db.Model):
     def __repr__(self):
         return f'RAL: {self.nummer}, R{self.r} G{self.g} B{self.b}, -> {self.omschrijving}'
 
+
+class Select_NLSFB(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    materiaal = db.Column(db.String(40), index=True, unique=True)
+    nlsfb = db.Column(db.String(5))
+
+    def __repr__(self):
+        return f'({self.id}) {self.materiaal}_{self.nlsfb}'
