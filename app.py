@@ -4,7 +4,7 @@ from flask_session import Session
 
 from google.cloud import secretmanager
 
-from dbModels import db, Naam, Kenmerk, Toepassing, KleurRAL
+from dbModels import db, Naam, Kenmerk, Toepassing, Select_RAL, Select_NLSFB
 from forms import BaseSelections
 import pprint as pp
 
@@ -55,13 +55,13 @@ def get_toepassing(_id: int) -> 'Toepassing element':
 
 
 # create a string with the correct material name
-def create_material(n: int, k: int, t: int, extra: list) -> str:
+def create_material(n: int, k: int, t: int, extra=[]) -> str:
     n_element = get_naam(n)
     k_element = get_kenmerk(k)
     t_element = get_toepassing(t)
     extra_string = ''
     for _string in extra:
-        clean_string = _string.replace('.', '').lower()
+        clean_string = _string.replace('.', '').replace(' ', '-').lower()
         extra_string += f'_{clean_string}'
     _string = f'{n_element.naam}_{k_element.kenmerk}_{t_element.toepassing}{extra_string}'
     print(_string, extra)
@@ -90,7 +90,14 @@ def index():
         formulier.kenmerk_selection.data = int(session['current']['kenmerk_selection'])
         formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(naam_selection).toepassingen]
         formulier.toepassing_selection.data = int(session['current']['toepassing_selection'])
-        materiaal_naam = session['current']['material_name']
+        extra = []
+        for extra_field in session['extra_fields'].values():
+            if 'value' in extra_field.keys():
+                extra.append(extra_field['value'])
+        materiaal_naam = create_material(n=formulier.naam_selection.data,
+                                         k=formulier.kenmerk_selection.data,
+                                         t=formulier.toepassing_selection.data,
+                                         extra=extra)
 
     else:
         session['current'] = {}
@@ -107,25 +114,24 @@ def index():
         session['current']['material_name'] = materiaal_naam
 
     # create extra fields by looking up how many are needed from the session cookie
-    if extra_fields():
-        c = 0
-        if any(formulier.extra_fields):
-            for field in range(len(formulier.extra_fields)):
-                formulier.extra_fields.pop_entry()
-        for _number, _item in session["extra_fields"].items():
-            formulier.extra_fields.append_entry()
-            formulier.extra_fields[c].label = _item['label']
-            formulier.extra_fields[c].data = _item['value'] if 'value' in _item else ''
-            formulier.extra_fields[c].name = _item['name']
-            formulier.extra_fields[c].id = _number
-            print(session['extra_fields'])
-            c += 1
 
-    materials_list=[]
+    if extra_fields():
+        ef = session['extra_fields']
+        drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'}}
+        drop_list['extra_fields'] = {}
+        for field in ef.values():
+            print(field)
+            if field['type'] in ['nlsfb', 'select_ral']:
+                drop_list['extra_fields'][field['type']] = field['id']
+        print(drop_list)
+        print(ef)
+
+    materials_list = []
     for i in created_materials:
         materials_list.append([i])
 
-    return render_template('index.html', formulier=formulier, selections=materials_list, materiaal=materiaal_naam)
+    return render_template('index.html', formulier=formulier, selections=materials_list, materiaal=materiaal_naam,
+                           extra_fields=ef, drop_list=drop_list)
 
 
 # used by JS for getting the available choices when the NAAM selection chainges.
@@ -147,16 +153,31 @@ def material():
     k = request.args.get('kenmerk_selection', default=1, type=int)
     t = request.args.get('toepassing_selection', default=1, type=int)
     print('args', request.args.to_dict())
+
     if extra_fields():
         print(session['extra_fields'])
     extra = []
+
+    result = {}
+
     for _k, _v in request.args.to_dict().items():
-        if _k[:5].lower() == "extra" and len(_v) > 0:
+        if _k[-9:].lower() not in ["selection", 'nlsfb'] and len(_v) > 0:
             extra.append(_v)
             session['extra_fields'][_k.split('-')[-1]]['value'] = _v
-    material_name = create_material(n=n, k=k, t=t, extra=extra)
-    session['current']['material_name'] = material_name
-    return jsonify({'material': material_name})
+        elif _k == 'nlsfb':
+            search = create_material(n=n, k=k, t=1)[:-4]
+            nlsfb_code = Select_NLSFB.query.filter_by(materiaal=search).first()
+            print(nlsfb_code)
+            if nlsfb_code is not None:
+                result['nlsfb'] = nlsfb_code.nlsfb
+                extra.append(nlsfb_code.nlsfb)
+            else:
+                result['nlsfb'] = '[geen code]'
+
+    result['material'] = create_material(n=n, k=k, t=t, extra=extra)
+    session['current']['material_name'] = result['material']
+
+    return jsonify(result)
 
 
 # adds a material name to the list for when 'save' is selected
@@ -199,7 +220,9 @@ def add_field():
         _ints = [int(i) for i in session['extra_fields'].keys()]
         c = str(max(_ints) + 1)
     session['extra_fields'][c] = {'name': f'extra_fields-{c}',
-                                  'label': f'Extra {c}'}
+                                  'label': f'Extra {c}',
+                                  'type': 'input',
+                                  'id': str(c)}
     return redirect(url_for('index'))
 
 
@@ -213,6 +236,27 @@ def remove_field(_index):
             del session['extra_fields'][i]
     return redirect(url_for('index'))
 
+
+@app.route('/extrafieldlist/<_index>/<_type>')
+def extra_field_list(_index, _type):
+    print("got index: ", _index, 'and type: ', _type)
+    current_field = session['extra_fields'][_index]
+    current_field['type'] = _type
+    current_field.pop('value', None)
+    current_field.pop('select_list', None)
+    if _type[:6] == 'select':
+        if _type[7:] == 'ral':
+            current_field['select_list'] = [r[0] for r in db.session.query(Select_RAL.nummer).all()]
+            current_field['value'] = current_field['select_list'][0]
+
+    if _type == 'nlsfb':
+        search = '_'.join(session['current']['material_name'].split('_', 2)[:2])
+        nlsfb_code = Select_NLSFB.query.filter_by(materiaal=search).first()
+        if nlsfb_code is not None:
+            current_field['value'] = nlsfb_code.nlsfb
+
+    print(session['extra_fields'])
+    return redirect(url_for('index'))
 
 #add some testing data
 @app.route('/add_temp_list')

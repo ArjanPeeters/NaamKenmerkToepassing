@@ -26,19 +26,38 @@
                         {{formulier.toepassing_selection(class="form-control toepassing")}}
                     </div>
                 </div>
-                {% if formulier.extra_fields | length > 0 %}
-                    {% for extra in formulier.extra_fields %}
+                {% if extra_fields | length > 0 %}
+                    {% for field in extra_fields %}
+                        {% set extra = extra_fields[field] %}
                         <div class="col">
                             <div class="input-group">
-                                <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                    {{ extra.label }}
+                                <button type="button" class="btn btn-outline-secondary text-secondary-emphasis">
+                                    {{ drop_list['drop-items'][extra.type] }}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle text-secondary-emphasis extra-dropdown dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li class="dropdown-item">vrij invulveld</li>
-                                    <li class="dropdown-item">nl-sfb tabel 3</li>
-                                    <li class="dropdown-item">ral kleur</li>
+                                    {% for short, long in drop_list['drop-items'].items() %}
+                                        {% if drop_list['extra_fields'][short] != extra.id and short in drop_list['extra_fields'].keys() %}
+                                            {% set menu_item_disabled = True %}
+                                        {% else %}
+                                            {% set menu_item_disabled = False %}
+                                        {% endif %}
+                                        <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/extrafieldlist/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
+                                    {% endfor %}
                                 </ul>
-                                {{ extra(class="form-control") }}
+                                {% if extra.type == 'input' %}
+                                    <input type="text" class="form-control" name="{{ extra.name }}" value={{ '' if 'value' not in extra.keys() else extra.value }}>
+                                {% elif extra.type == 'nlsfb' %}
+                                    <input type="search" class="form-control" name='nlsfb' value="{{ '[code]' if 'value' not in extra.keys() else extra.value }}" disabled>
+                                {% elif extra.type.startswith('select_') %}
+                                    <select class="form-select form-control" name={{ extra.name }} value={{ extra.value }}>
+                                        {% for option in extra.select_list %}
+                                            <option>{{ option }}</option>
+                                        {%  endfor %}
+                                    </select>
+                                {% endif %}
                                 <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
                             </div>
                         </div>
@@ -73,9 +92,8 @@
     let kenmerk_select = document.getElementById('kenmerk_selection');
     let toepassing_select = document.getElementById('toepassing_selection');
 
-
     naam_select.onchange = function() {
-        naam = naam_select.value;
+        let naam = naam_select.value;
 
         fetch('/naam/' + naam).then(function(response) {
             response.json().then(function(data) {
@@ -96,6 +114,7 @@
         });
     }
 
+
     document.getElementById('save_button').addEventListener(
         "click", navigator.clipboard.writeText(
             document.getElementById("material"
@@ -106,9 +125,11 @@
     const material_form = document.getElementById('material_form')
     material_form.addEventListener('change', function() {
         console.log('change detected')
+
+        const nlsfb_element = document.querySelector('[name="nlsfb"]');
         let material_name = document.getElementById('material');
         let extra_field_data = {}
-        let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"]')
+        let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"],[name="nlsfb"],[name^="select"]')
         console.log(get_extra_fields)
         for (let _item of get_extra_fields) {
             console.log(_item.id, _item.name, _item.value);
@@ -119,8 +140,14 @@
             response.json().then(function(return_data) {
                 material_name.innerText = return_data.material
                 console.log('finally Success!')
+                if (nlsfb_element) {
+                    nlsfb_element.value = return_data.nlsfb;
+                    console.log('nlsfb returned' + return_data.nlsfb);
+
+                }
             })
         });
+
     });
 
 
