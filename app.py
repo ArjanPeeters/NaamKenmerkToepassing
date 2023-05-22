@@ -35,6 +35,12 @@ Session(app)
 
 
 # function to check if session cookie contains extra fields key. If not make it and return true
+def current():
+    if 'current' not in session:
+        session['current'] = {'material_name': ''}
+    return True
+
+
 def extra_fields():
     if 'extra_fields' not in session:
         session['extra_fields'] = {}
@@ -150,7 +156,8 @@ def update(num):
 # used by JS for getting a new material name for when an input in the form changes
 @app.route('/material')
 def material():
-    session['current'] = request.args.to_dict()
+    if current():
+        session['current'] = request.args.to_dict()
     n = request.args.get('naam_selection', default=1, type=int)
     k = request.args.get('kenmerk_selection', default=1, type=int)
     t = request.args.get('toepassing_selection', default=1, type=int)
@@ -185,11 +192,14 @@ def material():
 # adds a material name to the list for when 'save' is selected
 @app.route('/add')
 def add_item():
-    if session['current']['material_name'] not in session['created_materials']:
-        session['created_materials'].insert(0, session['current']['material_name'])
-    else:
-        flash(f"{session['current']['material_name']} is al in de lijst opgenomen")
-        print('already in list')
+
+    if current():
+        if session['current']['material_name'] not in session['created_materials']:
+            session['created_materials'].insert(0, session['current']['material_name'])
+        else:
+            flash(f"{session['current']['material_name']} is al in de lijst opgenomen")
+            print('already in list')
+
     return redirect(url_for('index'))
 
 
