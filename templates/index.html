@@ -44,7 +44,7 @@
                                         {% else %}
                                             {% set menu_item_disabled = False %}
                                         {% endif %}
-                                        <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/extrafieldlist/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
+                                        <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
                                     {% endfor %}
                                 </ul>
                                 {% if extra.type == 'input' %}
@@ -54,7 +54,7 @@
                                 {% elif extra.type.startswith('select_') %}
                                     <select class="form-select form-control" name={{ extra.name }} value={{ extra.value }}>
                                         {% for option in extra.select_list %}
-                                            <option>{{ option }}</option>
+                                            <option {{ 'selected=""' if option == extra.value }}>{{ option }}</option>
                                         {%  endfor %}
                                     </select>
                                 {% endif %}
@@ -114,13 +114,14 @@
         });
     }
 
+    function copyMaterialToClipboard () {
+        navigator.clipboard.writeText(
+            document.getElementById("material").innerText
+        )
+    }
 
     document.getElementById('save_button').addEventListener(
-        "click", navigator.clipboard.writeText(
-            document.getElementById("material"
-            ).innerText
-        )
-    )
+        "click", copyMaterialToClipboard)
 
     const material_form = document.getElementById('material_form')
     material_form.addEventListener('change', function() {

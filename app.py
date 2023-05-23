@@ -35,13 +35,13 @@ Session(app)
 
 
 # function to check if session cookie contains extra fields key. If not make it and return true
-def current():
+def check_if_current():
     if 'current' not in session:
-        session['current'] = {'material_name': ''}
+        session['current'] = {'selection': {}}
     return True
 
 
-def extra_fields():
+def check_if_extra_fields():
     if 'extra_fields' not in session:
         session['extra_fields'] = {}
     return True
@@ -62,18 +62,40 @@ def get_toepassing(_id: int) -> 'Toepassing element':
     return Toepassing.query.filter_by(id=_id).first()
 
 
+def get_nlsfb(naam: int, kenmerk: int):
+    naam_element = get_naam(_id=naam)
+    kenmerk_element = get_kenmerk(_id=kenmerk)
+    search = f'{naam_element.naam}_{kenmerk_element.kenmerk}'
+    nlsfb_element = Select_NLSFB.query.filter_by(materiaal=search).first()
+    if nlsfb_element is not None:
+        return nlsfb_element.nlsfb
+    else:
+        return ''
+
+
 # create a string with the correct material name
-def create_material(n: int, k: int, t: int, extra=[]) -> str:
-    n_element = get_naam(n)
-    k_element = get_kenmerk(k)
-    t_element = get_toepassing(t)
+def create_material() -> str:
+    selection = session['current']['selection']
+
+    n_element = get_naam(selection.get('naam_selection', 1))
+    k_element = get_kenmerk(selection.get('kenmerk_selection', 1))
+    t_element = get_toepassing(selection.get('toepassing_selection', 1))
     extra_string = ''
-    for _string in extra:
-        clean_string = _string.replace('.', '').replace(' ', '-').lower()
-        extra_string += f'_{clean_string}'
+
+    if check_if_extra_fields():
+        for value in session['extra_fields'].values():
+            print('value', value)
+            # fist make the string Naa.k.t compliant
+            clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
+            if clean_string != '':
+                extra_string += f'_{clean_string}'
+
+
     _string = f'{n_element.naam}_{k_element.kenmerk}_{t_element.toepassing}{extra_string}'
-    print(_string, extra)
+    print(_string)
+    session['current']['material_name'] = _string
     return _string
+
 
 # Main page
 @app.route('/', methods=['GET', 'POST'])
@@ -90,46 +112,32 @@ def index():
     formulier = F()
 
     # check if site already in use. If so use last inputs as default else make first choice as default.
-    if 'current' in session:
-        naam_selection = session['current']['naam_selection']
+    if check_if_current():
+        naam_selection = session['current']['selection'].get('naam_selection', 1)
         formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
-        formulier.naam_selection.data = int(session['current']['naam_selection'])
+        formulier.naam_selection.data = int(session['current']['selection'].get('naam_selection', 1))
         formulier.kenmerk_selection.choices = [(ken.id, ken.kenmerk) for ken in get_naam(naam_selection).kenmerken]
-        formulier.kenmerk_selection.data = int(session['current']['kenmerk_selection'])
+        formulier.kenmerk_selection.data = int(session['current']['selection'].get('kenmerk_selection', 1))
         formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(naam_selection).toepassingen]
-        formulier.toepassing_selection.data = int(session['current']['toepassing_selection'])
+        formulier.toepassing_selection.data = int(session['current']['selection'].get('toepassing_selection', 1))
         extra = []
-        for extra_field in session['extra_fields'].values():
-            if 'value' in extra_field.keys():
-                extra.append(extra_field['value'])
-        materiaal_naam = create_material(n=formulier.naam_selection.data,
-                                         k=formulier.kenmerk_selection.data,
-                                         t=formulier.toepassing_selection.data,
-                                         extra=extra)
+        if 'extra_fields' in session:
+            for extra_field in session['extra_fields'].values():
+                if 'value' in extra_field.keys():
+                    extra.append(extra_field['value'])
+        materiaal_naam = create_material()
 
-    else:
-        session['current'] = {}
-        formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
-        formulier.naam_selection.data = 1
-        formulier.kenmerk_selection.choices = [(ken.id, ken.kenmerk) for ken in get_naam(1).kenmerken]
-        formulier.kenmerk_selection.data = 1
-        formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(1).toepassingen]
-        formulier.toepassing_selection.data = 1
-        materiaal_naam = create_material(n=1, k=1, t=1, extra=[])
-        session['current']['naam_selection'] = 1
-        session['current']['kenmerk_selection'] = 1
-        session['current']['toepassing_selection'] = 1
-        session['current']['material_name'] = materiaal_naam
+    #else:
 
     # create extra fields by looking up how many are needed from the session cookie
 
-    if extra_fields():
+    if check_if_extra_fields():
         ef = session['extra_fields']
         drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'}}
         drop_list['extra_fields'] = {}
         for field in ef.values():
             print(field)
-            if field['type'] in ['nlsfb', 'select_ral']:
+            if field['type'] != 'input':
                 drop_list['extra_fields'][field['type']] = field['id']
         print(drop_list)
         print(ef)
@@ -156,34 +164,36 @@ def update(num):
 # used by JS for getting a new material name for when an input in the form changes
 @app.route('/material')
 def material():
-    if current():
+    if check_if_current():
         session['current'] = request.args.to_dict()
-    n = request.args.get('naam_selection', default=1, type=int)
-    k = request.args.get('kenmerk_selection', default=1, type=int)
-    t = request.args.get('toepassing_selection', default=1, type=int)
+
     print('args', request.args.to_dict())
 
-    if extra_fields():
+    if check_if_current():
+        session['current']['selection'] = request.args.to_dict()
+
+    if check_if_extra_fields():
         print(session['extra_fields'])
-    extra = []
 
     result = {}
 
     for _k, _v in request.args.to_dict().items():
-        if _k[-9:].lower() not in ["selection", 'nlsfb'] and len(_v) > 0:
-            extra.append(_v)
-            session['extra_fields'][_k.split('-')[-1]]['value'] = _v
+        if _k != 'nlsfb' and len(_v) > 0:
+            print(_k,_v)
+            for v in session['extra_fields'].values():
+                if v['name'] == _k:
+                    v['value'] = _v
         elif _k == 'nlsfb':
-            search = create_material(n=n, k=k, t=1)[:-4]
-            nlsfb_code = Select_NLSFB.query.filter_by(materiaal=search).first()
-            print(nlsfb_code)
-            if nlsfb_code is not None:
-                result['nlsfb'] = nlsfb_code.nlsfb
-                extra.append(nlsfb_code.nlsfb)
-            else:
+            n = request.args.get('naam_selection', default=1, type=int)
+            k = request.args.get('kenmerk_selection', default=1, type=int)
+            result['nlsfb'] = get_nlsfb(naam=n, kenmerk=k)
+            if result['nlsfb'] == '':
                 result['nlsfb'] = '[geen code]'
+            for v in session['extra_fields'].values():
+                if v['type'] == 'nlsfb':
+                    v['value'] = result['nlsfb']
 
-    result['material'] = create_material(n=n, k=k, t=t, extra=extra)
+    result['material'] = create_material()
     session['current']['material_name'] = result['material']
 
     return jsonify(result)
@@ -193,7 +203,7 @@ def material():
 @app.route('/add')
 def add_item():
 
-    if current():
+    if check_if_current():
         if session['current']['material_name'] not in session['created_materials']:
             session['created_materials'].insert(0, session['current']['material_name'])
         else:
@@ -212,6 +222,7 @@ def delete_item(_index):
         del session['created_materials'][real_index]
     else:
         print(_index, 'is of type', type(_index), 'not int')
+
     return redirect(url_for('index'))
 
 
@@ -226,15 +237,19 @@ def delete_list():
 # adds an extra entry in the fields session cookie. Later the main index uses it to add an extra input box
 @app.route('/add_field')
 def add_field():
-    if len(session['extra_fields']) == 0:
-        c = '1'
-    else:
-        _ints = [int(i) for i in session['extra_fields'].keys()]
-        c = str(max(_ints) + 1)
+    if check_if_extra_fields():
+        if any(session['extra_fields']):
+            _ints = [int(i) for i in session['extra_fields'].keys()]
+            c = str(max(_ints) + 1)
+        else:
+            c = '1'
+
     session['extra_fields'][c] = {'name': f'extra_fields-{c}',
                                   'label': f'Extra {c}',
                                   'type': 'input',
-                                  'id': str(c)}
+                                  'id': str(c),
+                                  'value': ''}
+
     return redirect(url_for('index'))
 
 
@@ -242,33 +257,41 @@ def add_field():
 def remove_field(_index):
     """function to remove an extra field when [-] button is selected"""
     print("removing:", _index)
-    if extra_fields():
+    if check_if_extra_fields():
         if _index in session['extra_fields']:
             del session['extra_fields'][_index]
     return redirect(url_for('index'))
 
 
-@app.route('/extrafieldlist/<_index>/<_type>')
+@app.route('/change_field/<_index>/<_type>')
 def extra_field_list(_index, _type):
     """function to change an extra field from an input to something else or back"""
     print("got index: ", _index, 'and type: ', _type)
-    current_field = session['extra_fields'][_index]
-    current_field['type'] = _type
-    current_field.pop('value', None)
-    current_field.pop('select_list', None)
+    if check_if_current():
+        current_field = session['extra_fields'][_index]
+        current_field['type'] = _type
+        current_field['value'] = ''
+        current_field.pop('select_list', None)
+
     if _type[:6] == 'select':
         if _type[7:] == 'ral':
             current_field['select_list'] = [r[0] for r in db.session.query(Select_RAL.nummer).all()]
             current_field['value'] = current_field['select_list'][0]
 
-    if _type == 'nlsfb':
+    elif _type == 'nlsfb':
         search = '_'.join(session['current']['material_name'].split('_', 2)[:2])
         nlsfb_code = Select_NLSFB.query.filter_by(materiaal=search).first()
         if nlsfb_code is not None:
             current_field['value'] = nlsfb_code.nlsfb
 
+    else:
+        current_field['value'] = ''
+
+    create_material()
+
     print(session['extra_fields'])
     return redirect(url_for('index'))
+
 
 #add some testing data
 @app.route('/add_temp_list')
