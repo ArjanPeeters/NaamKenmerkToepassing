@@ -26,6 +26,7 @@
                         {{formulier.toepassing_selection(class="form-control toepassing")}}
                     </div>
                 </div>
+            <!-- optional extra fields -->
                 {% if extra_fields | length > 0 %}
                     {% for field in extra_fields %}
                         {% set extra = extra_fields[field] %}
@@ -47,6 +48,7 @@
                                         <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
                                     {% endfor %}
                                 </ul>
+                            <!-- see what type of input is chosen -->
                                 {% if extra.type == 'input' %}
                                     <input type="text" class="form-control" name="{{ extra.name }}" value={{ '' if 'value' not in extra.keys() else extra.value }}>
                                 {% elif extra.type == 'nlsfb' %}
@@ -64,7 +66,7 @@
                     {% endfor %}
                 {% endif %}
             </div>
-
+    <!-- Buttons at the bottom of the form -->
         </form>
         <div class="divider-invisible"></div>
         <div class="d-inline-flex gap-4 text-center mb-5">
@@ -153,7 +155,7 @@
 
 
 </script>
-
+<!-- if the save button has been pushed this list will be generated -->
 {% if selections|length > 0 %}
     <div class="container my-5">
         <div class="p-5 text-center bg-body-tertiary rounded-3">
@@ -179,7 +181,7 @@
             </div>
         </div>
     </div>
-
+<!-- script for adding table rows -->
     <script>
         const data_table = {{ selections|tojson }};
         const numberOfRows = data_table.length;
