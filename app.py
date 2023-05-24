@@ -127,14 +127,11 @@ def index():
                     extra.append(extra_field['value'])
         materiaal_naam = create_material()
 
-    #else:
-
     # create extra fields by looking up how many are needed from the session cookie
-
     if check_if_extra_fields():
         ef = session['extra_fields']
-        drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'}}
-        drop_list['extra_fields'] = {}
+        drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
+                     'extra_fields': {}}
         for field in ef.values():
             print(field)
             if field['type'] != 'input':
