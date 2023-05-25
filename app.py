@@ -35,16 +35,14 @@ Session(app)
 
 
 # function to check if session cookie contains extra fields key. If not make it and return true
-def check_if_current():
+def session_current():
     if 'current' not in session:
         session['current'] = {'selection': {}}
-    return True
 
 
-def check_if_extra_fields():
+def session_extra_fields():
     if 'extra_fields' not in session:
         session['extra_fields'] = {}
-    return True
 
 
 # returns the correct naam from the database by id
@@ -75,6 +73,7 @@ def get_nlsfb(naam: int, kenmerk: int):
 
 # create a string with the correct material name
 def create_material() -> str:
+    session_current()
     selection = session['current']['selection']
 
     n_element = get_naam(selection.get('naam_selection', 1))
@@ -82,13 +81,13 @@ def create_material() -> str:
     t_element = get_toepassing(selection.get('toepassing_selection', 1))
     extra_string = ''
 
-    if check_if_extra_fields():
-        for value in session['extra_fields'].values():
-            print('value', value)
-            # fist make the string Naa.k.t compliant
-            clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
-            if clean_string != '':
-                extra_string += f'_{clean_string}'
+    session_extra_fields()
+    for value in session['extra_fields'].values():
+        print('value', value)
+        # fist make the string Naa.k.t compliant
+        clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
+        if clean_string != '':
+            extra_string += f'_{clean_string}'
 
 
     _string = f'{n_element.naam}_{k_element.kenmerk}_{t_element.toepassing}{extra_string}'
@@ -112,32 +111,32 @@ def index():
     formulier = F()
 
     # check if site already in use. If so use last inputs as default else make first choice as default.
-    if check_if_current():
-        naam_selection = session['current']['selection'].get('naam_selection', 1)
-        formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
-        formulier.naam_selection.data = int(session['current']['selection'].get('naam_selection', 1))
-        formulier.kenmerk_selection.choices = [(ken.id, ken.kenmerk) for ken in get_naam(naam_selection).kenmerken]
-        formulier.kenmerk_selection.data = int(session['current']['selection'].get('kenmerk_selection', 1))
-        formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(naam_selection).toepassingen]
-        formulier.toepassing_selection.data = int(session['current']['selection'].get('toepassing_selection', 1))
-        extra = []
-        if 'extra_fields' in session:
-            for extra_field in session['extra_fields'].values():
-                if 'value' in extra_field.keys():
-                    extra.append(extra_field['value'])
-        materiaal_naam = create_material()
+    session_current()
+    naam_selection = session['current']['selection'].get('naam_selection', 1)
+    formulier.naam_selection.choices = [(r[0], r[1]) for r in db.session.query(Naam.id, Naam.naam).all()]
+    formulier.naam_selection.data = int(session['current']['selection'].get('naam_selection', 1))
+    formulier.kenmerk_selection.choices = [(ken.id, ken.kenmerk) for ken in get_naam(naam_selection).kenmerken]
+    formulier.kenmerk_selection.data = int(session['current']['selection'].get('kenmerk_selection', 1))
+    formulier.toepassing_selection.choices = [(toe.id, toe.toepassing) for toe in get_naam(naam_selection).toepassingen]
+    formulier.toepassing_selection.data = int(session['current']['selection'].get('toepassing_selection', 1))
+    extra = []
+    if 'extra_fields' in session:
+        for extra_field in session['extra_fields'].values():
+            if 'value' in extra_field.keys():
+                extra.append(extra_field['value'])
+    materiaal_naam = create_material()
 
     # create extra fields by looking up how many are needed from the session cookie
-    if check_if_extra_fields():
-        ef = session['extra_fields']
-        drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
-                     'extra_fields': {}}
-        for field in ef.values():
-            print(field)
-            if field['type'] != 'input':
-                drop_list['extra_fields'][field['type']] = field['id']
-        print(drop_list)
-        print(ef)
+    session_extra_fields()
+    ef = session['extra_fields']
+    drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
+                 'extra_fields': {}}
+    for field in ef.values():
+        print(field)
+        if field['type'] != 'input':
+            drop_list['extra_fields'][field['type']] = field['id']
+    print(drop_list)
+    print(ef)
 
     materials_list = []
     for i in created_materials:
@@ -161,16 +160,15 @@ def update(num):
 # used by JS for getting a new material name for when an input in the form changes
 @app.route('/material')
 def material():
-    if check_if_current():
-        session['current'] = request.args.to_dict()
+    session_current()
+    session['current'] = request.args.to_dict()
 
     print('args', request.args.to_dict())
 
-    if check_if_current():
-        session['current']['selection'] = request.args.to_dict()
+    session['current']['selection'] = request.args.to_dict()
 
-    if check_if_extra_fields():
-        print(session['extra_fields'])
+    session_extra_fields()
+    print(session['extra_fields'])
 
     result = {}
 
@@ -200,12 +198,12 @@ def material():
 @app.route('/add')
 def add_item():
 
-    if check_if_current():
-        if session['current']['material_name'] not in session['created_materials']:
-            session['created_materials'].insert(0, session['current']['material_name'])
-        else:
-            flash(f"{session['current']['material_name']} is al in de lijst opgenomen")
-            print('already in list')
+    session_current()
+    if session['current']['material_name'] not in session['created_materials']:
+        session['created_materials'].insert(0, session['current']['material_name'])
+    else:
+        flash(f"{session['current']['material_name']} is al in de lijst opgenomen")
+        print('already in list')
 
     return redirect(url_for('index'))
 
@@ -234,12 +232,12 @@ def delete_list():
 # adds an extra entry in the fields session cookie. Later the main index uses it to add an extra input box
 @app.route('/add_field')
 def add_field():
-    if check_if_extra_fields():
-        if any(session['extra_fields']):
-            _ints = [int(i) for i in session['extra_fields'].keys()]
-            c = str(max(_ints) + 1)
-        else:
-            c = '1'
+    session_extra_fields()
+    if any(session['extra_fields']):
+        _ints = [int(i) for i in session['extra_fields'].keys()]
+        c = str(max(_ints) + 1)
+    else:
+        c = '1'
 
     session['extra_fields'][c] = {'name': f'extra_fields-{c}',
                                   'label': f'Extra {c}',
@@ -254,9 +252,9 @@ def add_field():
 def remove_field(_index):
     """function to remove an extra field when [-] button is selected"""
     print("removing:", _index)
-    if check_if_extra_fields():
-        if _index in session['extra_fields']:
-            del session['extra_fields'][_index]
+    session_extra_fields()
+    if _index in session['extra_fields']:
+        del session['extra_fields'][_index]
     return redirect(url_for('index'))
 
 
@@ -264,11 +262,11 @@ def remove_field(_index):
 def extra_field_list(_index, _type):
     """function to change an extra field from an input to something else or back"""
     print("got index: ", _index, 'and type: ', _type)
-    if check_if_current():
-        current_field = session['extra_fields'][_index]
-        current_field['type'] = _type
-        current_field['value'] = ''
-        current_field.pop('select_list', None)
+    session_current()
+    current_field = session['extra_fields'][_index]
+    current_field['type'] = _type
+    current_field['value'] = ''
+    current_field.pop('select_list', None)
 
     if _type[:6] == 'select':
         if _type[7:] == 'ral':
