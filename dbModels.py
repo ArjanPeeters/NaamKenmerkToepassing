@@ -10,6 +10,10 @@ naam_toepassing_tabel = db.Table('naam_toepassing',
                                  db.Column('naam_id', db.Integer, db.ForeignKey('naam.id'), primary_key=True),
                                  db.Column('toepassing_id', db.Integer, db.ForeignKey('toepassing.id'), primary_key=True))
 
+naam_extra_lijsten_tabel = db.Table('naam_extra_lijsten',
+                                    db.Column('naam_id', db.Integer, db.ForeignKey('naam.id'), primary_key=True),
+                                    db.Column('Extralijsten_id', db.Integer, db.ForeignKey('extralijsten.id'), primary_key=True))
+
 
 class Naam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,9 +26,14 @@ class Naam(db.Model):
                                    secondary=naam_toepassing_tabel,
                                    lazy='subquery',
                                    backref=db.backref('namen', lazy=True))
+    extra_lijsten = db.relationship('ExtraLijsten',
+                                    secondary=naam_extra_lijsten_tabel,
+                                    lazy='subquery',
+                                    backref=db.backref('namen', lazy=True))
 
     def __repr__(self):
-        return f'Naam:{self.naam}, kenmerken:{self.kenmerken}, toepassingen:{self.toepassingen}'
+        return f'Naam:{self.naam}, kenmerken: {len(self.kenmerken)}, toepassingen: {len(self.toepassingen)},' \
+               f'extra lijsten: {len(self.extra_lijsten)}'
 
 
 class Kenmerk(db.Model):
@@ -32,7 +41,7 @@ class Kenmerk(db.Model):
     kenmerk = db.Column(db.String(25), index=True, unique=True)
 
     def __repr__(self):
-        return f'Kenmerk:{self.kenmerk}, namen:{self.namen}'
+        return f'Kenmerk:{self.kenmerk}, namen:{len(self.namen)}'
 
 
 class Toepassing(db.Model):
@@ -40,7 +49,7 @@ class Toepassing(db.Model):
     toepassing = db.Column(db.String(25), index=True, unique=True)
 
     def __repr__(self):
-        return f'Toepassing:{self.toepassing}, namen:{self.namen}'
+        return f'Toepassing:{self.toepassing}, namen:{len(self.namen)}'
 
 
 class Select_RAL(db.Model):
@@ -61,4 +70,14 @@ class Select_NLSFB(db.Model):
     nlsfb = db.Column(db.String(5))
 
     def __repr__(self):
-        return f'({self.id}) {self.materiaal}_{self.nlsfb}'
+        return f'{self.materiaal}_{self.nlsfb}'
+
+
+class ExtraLijsten(db.Model):
+    __tablename__ = 'extralijsten'
+    id = db.Column(db.Integer, primary_key=True)
+    soort = db.Column(db.String(20))
+    omschrijving = db.Column(db.String(25), index=True)
+
+    def __repr__(self):
+        return f'soort:{self.soort}, omschrijving: {self.omschrijving}, hoort bij:{self.namen}'

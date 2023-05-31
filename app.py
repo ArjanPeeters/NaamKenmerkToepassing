@@ -6,7 +6,7 @@ from lists import list_of_test_materials
 
 from google.cloud import secretmanager
 
-from dbModels import db, Naam, Kenmerk, Toepassing, Select_RAL, Select_NLSFB
+from dbModels import db, Naam, Kenmerk, Toepassing, Select_RAL, Select_NLSFB, ExtraLijsten
 from forms import BaseSelections
 import pprint as pp
 
