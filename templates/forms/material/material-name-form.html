@@ -1,0 +1,65 @@
+<form method="POST"
+      class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-gap-4"
+      action="{{url_for('index')}}"
+      id="material_form"
+      name="material_form"
+>
+    {{formulier.csrf_token}}
+    <div class="col flex-grow-1">
+        <div class="input-group">
+            <span class="input-group-text naam" id="input_naam">{{formulier.naam_selection.label}}</span>
+            {{formulier.naam_selection(class="form-control naam")}}
+        </div>
+    </div>
+    <div class="col flex-grow-1">
+        <div class="input-group">
+            <span class="input-group-text kenmerk">{{formulier.kenmerk_selection.label}}</span>
+            {{formulier.kenmerk_selection(class="form-control kenmerk")}}
+        </div>
+    </div>
+    <div class="col flex-grow-1">
+        <div class="input-group">
+            <span class="input-group-text toepassing">{{formulier.toepassing_selection.label}}</span>
+            {{formulier.toepassing_selection(class="form-control toepassing")}}
+        </div>
+    </div>
+    <!-- optional extra fields -->
+    {% if extra_fields | length > 0 %}
+    {% for field in extra_fields %}
+    {% set extra = extra_fields[field] %}
+    <div class="col">
+        <div class="input-group">
+            <label class="input-group-text text-secondary-emphasis" for="type-{{ extra.id }}">
+                {{ drop_list['drop-items'][extra.type] }}
+            </label>
+            <button id="type-{{ extra.id }}" type="button" class="btn btn-outline-secondary dropdown-toggle text-secondary-emphasis extra-dropdown dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                {% for short, long in drop_list['drop-items'].items() %}
+                {% if drop_list['extra_fields'][short] != extra.id and short in drop_list['extra_fields'].keys() %}
+                {% set menu_item_disabled = True %}
+                {% else %}
+                {% set menu_item_disabled = False %}
+                {% endif %}
+                <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
+                {% endfor %}
+            </ul>
+            <!-- see what type of input is chosen -->
+            {% if extra.type == 'input' %}
+            <input type="text" class="form-control" name="{{ extra.name }}" value={{ '' if 'value' not in extra.keys() else extra.value }}>
+            {% elif extra.type == 'nlsfb' %}
+            <input type="search" class="form-control" name='nlsfb' value="{{ '[code]' if 'value' not in extra.keys() else extra.value }}" disabled>
+            {% elif extra.type.startswith('select_') %}
+            <select class="form-select form-control" name={{ extra.name }} value={{ extra.value }}>
+                {% for option in extra.select_list %}
+                <option {{ 'selected=""' if option == extra.value }}>{{ option }}</option>
+                {%  endfor %}
+            </select>
+            {% endif %}
+            <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</form>
