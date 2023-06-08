@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "module": "CommonJS",
+        "target": "es2015",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "paths": {
+            "@app-dependency-injection": ["src/ts/dependency-injection.ts"],
+            "@app-forms": ["src/ts/forms/index.ts"],
+            "@app-interfaces": ["src/ts/interfaces/index.ts"],
+            "@app-styles/*": ["src/scss/*"],
+            "@app-utils": ["src/ts/utils/index.ts"]
+        }
+    }
+}

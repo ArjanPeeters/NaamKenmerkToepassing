@@ -1,3 +1,9 @@
+// Vendor imports
+@import 'bootstrap';
+
+// Application imports
+@import 'components';
+
 /* Style to center selection boxes */
 html, body {
     font-family: 'Roboto', sans-serif;
@@ -11,19 +17,8 @@ html, body {
     border-width: 1px 0;
     box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
 }
+
 .divider-invisible {
     width: 100%;
     height: 2rem;
-}
-
-.naam {
-    border-color: #006bb2 !important;
-}
-
-.kenmerk {
-    border-color: #fcbd2a !important;
-}
-
-.toepassing {
-    border-color: #70ad47 !important;
 }
