@@ -96,6 +96,27 @@ def create_material() -> str:
     return _string
 
 
+def make_dropdown_list():
+    session_extra_fields()
+    ef = session['extra_fields']
+    drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
+                 'extra_fields': {}}
+
+    naam_for_extra_lijst = get_naam(_id=session['current']['selection'].get('naam_selection', 1))
+    extra_lijst = naam_for_extra_lijst.extra_lijsten
+    print('naam', naam_for_extra_lijst.naam, 'Extra_lijst:', extra_lijst)
+
+    drop_list['drop-items']['dropdown-header'] = f'{naam_for_extra_lijst.naam}'
+    for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
+        drop_list['drop-items'][f'select_{naam_for_extra_lijst.naam}_{list_item}'] = f'{list_item}'
+
+    for field in ef.values():
+        print(field)
+        if field['type'] != 'input':
+            drop_list['extra_fields'][field['type']] = field['id']
+
+    return drop_list
+
 # Main page
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -127,34 +148,44 @@ def index():
     materiaal_naam = create_material()
 
     # create extra fields by looking up how many are needed from the session cookie
-    session_extra_fields()
-    ef = session['extra_fields']
-    drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
-                 'extra_fields': {}}
-    for field in ef.values():
-        print(field)
-        if field['type'] != 'input':
-            drop_list['extra_fields'][field['type']] = field['id']
-    print(drop_list)
-    print(ef)
+
 
     materials_list = []
     for i in created_materials:
         materials_list.append([i])
 
     return render_template('index.html', formulier=formulier, selections=materials_list, materiaal=materiaal_naam,
-                           extra_fields=ef, drop_list=drop_list)
+                           extra_fields=session['extra_fields'], drop_list=make_dropdown_list())
 
 
-# used by JS for getting the available choices when the NAAM selection chainges.
+@app.route('/test/<naam>')
+def test(naam):
+    naam_element = Naam.query.filter_by(naam=naam).first()
+    extra_lijsten = naam_element.extra_lijsten
+    print('test:', naam_element.extra_lijst_dict())
+    for el in extra_lijsten:
+        print(el.soort, el.omschrijving)
+    print('naam', naam_element.naam, 'Extra_lijst:', extra_lijsten)
+    return redirect(url_for('index'))
+
+
+# used by JS for getting the available choices when the NAAM selection changes.
 @app.route('/naam/<num>')
 def update(num):
     filter_naam = Naam.query.filter_by(id=num).first()
     print(filter_naam.naam)
+    cur = session['current']['selection']
     kenmerken = [{'id': k.id, 'kenmerk': k.kenmerk} for k in filter_naam.kenmerken]
     toepassingen = [{'id': t.id, 'toepassing': t.toepassing} for t in filter_naam.toepassingen]
-    session['naam_selected'] = num
-    return jsonify({'kenmerken': kenmerken, 'toepassingen': toepassingen})
+    cur['naam_selection'] = num
+    cur['kenmerk_selection'] = 1
+    cur['toepassing_selection'] = 1
+    result = {'kenmerken': kenmerken,
+              'toepassingen': toepassingen,
+              'material': create_material(),
+              'drop-list': make_dropdown_list()}
+    
+    return jsonify(result)
 
 
 # used by JS for getting a new material name for when an input in the form changes
@@ -271,6 +302,12 @@ def extra_field_list(_index, _type):
     if _type[:6] == 'select':
         if _type[7:] == 'ral':
             current_field['select_list'] = [r[0] for r in db.session.query(Select_RAL.nummer).all()]
+            current_field['value'] = current_field['select_list'][0]
+        alle_namen = [r[0] for r in db.session.query(Naam.naam).all()]
+        lijst_naam = _type.split('_')[1]
+        if lijst_naam in alle_namen:
+            naam_element = Naam.query.filter_by(naam=lijst_naam).first()
+            current_field['select_list'] = naam_element.extra_lijst_dict()[_type.split('_')[2]]
             current_field['value'] = current_field['select_list'][0]
 
     elif _type == 'nlsfb':

@@ -45,7 +45,11 @@
                                         {% else %}
                                             {% set menu_item_disabled = False %}
                                         {% endif %}
-                                        <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
+                                        {% if short == 'dropdown-header' %}
+                                            <li><h6 class="dropdown-header">{{ long }}:</h6></li>
+                                        {% else %}
+                                            <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
+                                        {% endif %}
                                     {% endfor %}
                                 </ul>
                             <!-- see what type of input is chosen -->
@@ -102,6 +106,7 @@
                 let kenmerkHTML = '';
                 let toepassingHTML = '';
 
+
                 for (let kenm of data.kenmerken) {
                     kenmerkHTML += '<option value="' + kenm.id + '">' + kenm.kenmerk + '</option>';
                 }
@@ -111,6 +116,7 @@
 
                 kenmerk_select.innerHTML = kenmerkHTML;
                 toepassing_select.innerHTML = toepassingHTML;
+                document.getElementById('material').innerText = data.material
 
             })
         });

@@ -35,6 +35,15 @@ class Naam(db.Model):
         return f'Naam:{self.naam}, kenmerken: {len(self.kenmerken)}, toepassingen: {len(self.toepassingen)},' \
                f'extra lijsten: {len(self.extra_lijsten)}'
 
+    def extra_lijst_dict(self):
+        return_dict = {}
+        for ele in self.extra_lijsten:
+            if ele.soort in return_dict.keys():
+                return_dict[ele.soort].append(ele.omschrijving)
+            else:
+                return_dict[ele.soort] = [ele.omschrijving]
+        return return_dict
+
 
 class Kenmerk(db.Model):
     id = db.Column(db.Integer, primary_key=True)
