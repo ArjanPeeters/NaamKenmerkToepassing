@@ -96,28 +96,6 @@ def create_material() -> str:
     return _string
 
 
-def make_dropdown_list():
-    session_extra_fields()
-    ef = session['extra_fields']
-    drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
-                 'extra_fields': {}}
-
-    naam_for_extra_lijst = get_naam(_id=session['current']['selection'].get('naam_selection', 1))
-    extra_lijst = naam_for_extra_lijst.extra_lijsten
-    print('naam', naam_for_extra_lijst.naam, 'Extra_lijst:', extra_lijst)
-
-    drop_list['drop-items']['dropdown-header'] = f'{naam_for_extra_lijst.naam}'
-    for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
-        drop_list['drop-items'][f'select_{naam_for_extra_lijst.naam}_{list_item}'] = f'{list_item}'
-
-    for field in ef.values():
-        print(field)
-        if field['type'] != 'input':
-            drop_list['extra_fields'][field['type']] = field['id']
-
-    return drop_list
-
-@app.route('/get_dropdowns/<naam>')
 def make_dropdown_list(naam):
     session_extra_fields()
     ef = session['extra_fields']
@@ -137,10 +115,14 @@ def make_dropdown_list(naam):
         if field['type'] != 'input':
             drop_list['extra_fields'][field['type']] = field['id']
 
-    return jsonify(drop_list)
+    return drop_list
 
 
-# Main page
+@app.route('/get_dropdowns/<naam>')
+def get_dropdownlist(naam):
+    return jsonify(make_dropdown_list(naam))
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
 
@@ -178,7 +160,8 @@ def index():
         materials_list.append([i])
 
     return render_template('index.html', formulier=formulier, selections=materials_list, materiaal=materiaal_naam,
-                           extra_fields=session['extra_fields'], drop_list=make_dropdown_list())
+                           extra_fields=session['extra_fields'], drop_list=make_dropdown_list(session['current']['selection'].get('naam_selection', 1)))
+# Main page
 
 
 @app.route('/test/<naam>')
@@ -204,9 +187,7 @@ def update(num):
     cur['kenmerk_selection'] = 1
     cur['toepassing_selection'] = 1
     result = {'kenmerken': kenmerken,
-              'toepassingen': toepassingen,
-              'material': create_material(),
-              'drop-list': make_dropdown_list()}
+              'toepassingen': toepassingen}
     
     return jsonify(result)
 

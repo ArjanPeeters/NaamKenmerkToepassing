@@ -10,8 +10,8 @@ export class MaterialNameForm {
     constructor() {
         this.naamSelectElement = document.querySelector('#naam_selection');
         this.kenmerkSelectElement = document.querySelector('#kenmerk_selection');
-        this.toepassingSelectElement = document.querySelector('#toepassing_selection')
-        this.dropdownElements = document.querySelectorAll('#dropdown-menu')
+        this.toepassingSelectElement = document.querySelector('#toepassing_selection');
+        this.dropdownElements = document.querySelectorAll('#dropdown-menu');
 
         this.naamSelectElement.addEventListener('change', () => this.renderKenmerkenAndToepassingenOptions());
     }
@@ -32,6 +32,8 @@ export class MaterialNameForm {
         let toepassingHTML = '';
         let dropdownHTML = '';
 
+        console.log(dropdownInformation);
+
         materialLists.kenmerken.forEach((option: Kenmerk) => {
             kenmerkHTML += `<option value="${option.id}">${option.kenmerk}</option>`;
         });
@@ -41,7 +43,7 @@ export class MaterialNameForm {
         });
 
         dropdownInformation.list_items.forEach((item: DropdownList) => {
-            console.log('List_items')
+            console.log(item);
         });
 
         this.kenmerkSelectElement.innerHTML = kenmerkHTML;
