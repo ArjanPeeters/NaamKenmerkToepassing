@@ -10,3 +10,5 @@
 /test*
 /node_modules
 /flask_session
+/static/*.js
+/static/*.css
