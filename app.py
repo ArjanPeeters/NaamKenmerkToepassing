@@ -117,6 +117,29 @@ def make_dropdown_list():
 
     return drop_list
 
+@app.route('/get_dropdowns/<naam>')
+def make_dropdown_list(naam):
+    session_extra_fields()
+    ef = session['extra_fields']
+    drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
+                 'extra_fields': {}}
+
+    naam_for_extra_lijst = Naam.query.filter_by(id=naam).first()
+    extra_lijst = naam_for_extra_lijst.extra_lijsten
+    print('naam', naam_for_extra_lijst.naam, 'Extra_lijst:', extra_lijst)
+
+    drop_list['drop-items']['dropdown-header'] = f'{naam_for_extra_lijst.naam}'
+    for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
+        drop_list['drop-items'][f'select_{naam_for_extra_lijst.naam}_{list_item}'] = f'{list_item}'
+
+    for field in ef.values():
+        print(field)
+        if field['type'] != 'input':
+            drop_list['extra_fields'][field['type']] = field['id']
+
+    return jsonify(drop_list)
+
+
 # Main page
 @app.route('/', methods=['GET', 'POST'])
 def index():
