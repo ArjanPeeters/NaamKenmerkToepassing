@@ -18,6 +18,10 @@ export class MaterialNameForm {
         return await (await fetch(`/naam/${naam}`)).json();
     }
 
+    private async  getDropdownLists(naam: string): Promise<DropdownList> {
+        return await (await fetch(`/drowpdown_lists/${naam}`)).json();
+    }
+
     private async renderKenmerkenAndToepassingenOptions(): Promise<void> {
         const materialLists = await this.getMaterialLists(this.naamSelectElement.value);
 
