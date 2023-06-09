@@ -1,4 +1,3 @@
-
 {% extends "base.html"  %}
 {% block content %}
 <!-- jumbotron -->
@@ -6,78 +5,15 @@
     <div class="p-5 text-center bg-body-tertiary rounded-3">
         <h1 class="text-body-emphasis" id="material">{{ materiaal }}</h1>
         <div class="divider-invisible"></div>
-            <div method="POST" class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-gap-4" action="{{url_for('index')}}" id="material_form" name="material_form">
-                {{formulier.csrf_token}}
-                <div class="col flex-grow-1">
-                    <div class="input-group">
-                        <span class="input-group-text naam" id="input_naam">{{formulier.naam_selection.label}}</span>
-                        {{formulier.naam_selection(class="form-control naam")}}
-                    </div>
-                </div>
-                <div class="col flex-grow-1">
-                    <div class="input-group">
-                        <span class="input-group-text kenmerk">{{formulier.kenmerk_selection.label}}</span>
-                        {{formulier.kenmerk_selection(class="form-control kenmerk")}}
-                    </div>
-                </div>
-                <div class="col flex-grow-1">
-                    <div class="input-group">
-                        <span class="input-group-text toepassing">{{formulier.toepassing_selection.label}}</span>
-                        {{formulier.toepassing_selection(class="form-control toepassing")}}
-                    </div>
-                </div>
-            <!-- optional extra fields -->
-                {% if extra_fields | length > 0 %}
-                    {% for field in extra_fields %}
-                        {% set extra = extra_fields[field] %}
-                        <div class="col">
-                            <div class="input-group">
-                                <label class="input-group-text text-secondary-emphasis" for="type-{{ extra.id }}">
-                                    {{ drop_list['drop-items'][extra.type] }}
-                                </label>
-                                <button id="type-{{ extra.id }}" type="button" class="btn btn-outline-secondary dropdown-toggle text-secondary-emphasis extra-dropdown dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    {% for short, long in drop_list['drop-items'].items() %}
-                                        {% if drop_list['extra_fields'][short] != extra.id and short in drop_list['extra_fields'].keys() %}
-                                            {% set menu_item_disabled = True %}
-                                        {% else %}
-                                            {% set menu_item_disabled = False %}
-                                        {% endif %}
-                                        {% if short == 'dropdown-header' %}
-                                            <li><h6 class="dropdown-header">{{ long }}:</h6></li>
-                                        {% else %}
-                                            <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
-                                        {% endif %}
-                                    {% endfor %}
-                                </ul>
-                            <!-- see what type of input is chosen -->
-                                {% if extra.type == 'input' %}
-                                    <input type="text" class="form-control" name="{{ extra.name }}" value={{ '' if 'value' not in extra.keys() else extra.value }}>
-                                {% elif extra.type == 'nlsfb' %}
-                                    <input type="search" class="form-control" name='nlsfb' value="{{ '[code]' if 'value' not in extra.keys() else extra.value }}" disabled>
-                                {% elif extra.type.startswith('select_') %}
-                                    <select class="form-select form-control" name={{ extra.name }} value={{ extra.value }}>
-                                        {% for option in extra.select_list %}
-                                            <option {{ 'selected=""' if option == extra.value }}>{{ option }}</option>
-                                        {%  endfor %}
-                                    </select>
-                                {% endif %}
-                                <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            </div>
-    <!-- Buttons at the bottom of the form -->
-        </form>
+        {% include 'forms/material/material-name-form.html' %}
         <div class="divider-invisible"></div>
         <div class="d-inline-flex gap-4 text-center mb-5">
-            <a href="/add" title="Save"
+            <a href="/add"
+               title="Save"
                class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
                role="button"
                id="save_button"
+               data-copy-to-clipboard="#material"
             >
                 <i class="fa-regular fa-clipboard"></i>&nbsp; + &nbsp;<i class="fa-solid fa-list-ol"></i>
             </a>
@@ -91,46 +27,34 @@
     </div>
 </div>
 
-
 <!-- JS to change selections of 2nd and 3rd input select by the first -->
 <script>
-    let naam_select = document.getElementById('naam_selection');
-    let kenmerk_select = document.getElementById('kenmerk_selection');
-    let toepassing_select = document.getElementById('toepassing_selection');
-
-    naam_select.onchange = function() {
-        let naam = naam_select.value;
-
-        fetch('/naam/' + naam).then(function(response) {
-            response.json().then(function(data) {
-                let kenmerkHTML = '';
-                let toepassingHTML = '';
-
-
-                for (let kenm of data.kenmerken) {
-                    kenmerkHTML += '<option value="' + kenm.id + '">' + kenm.kenmerk + '</option>';
-                }
-                for (let toep of data.toepassingen) {
-                    toepassingHTML += '<option value="' + toep.id + '">' + toep.toepassing + '</option>';
-                }
-
-                kenmerk_select.innerHTML = kenmerkHTML;
-                toepassing_select.innerHTML = toepassingHTML;
-                document.getElementById('material').innerText = data.material
-
-            })
-        });
-    }
-
-    function copyMaterialToClipboard () {
-        navigator.clipboard.writeText(
-            document.getElementById("material").innerText
-        )
-    }
-
-    document.getElementById('save_button').addEventListener(
-        "click", copyMaterialToClipboard)
-
+    // let naam_select = document.getElementById('naam_selection');
+    // let kenmerk_select = document.getElementById('kenmerk_selection');
+    // let toepassing_select = document.getElementById('toepassing_selection');
+    //
+    // naam_select.onchange = function() {
+    //     let naam = naam_select.value;
+    //
+    //     fetch('/naam/' + naam).then(function(response) {
+    //         response.json().then(function(data) {
+    //             let kenmerkHTML = '';
+    //             let toepassingHTML = '';
+    //
+    //             for (let kenm of data.kenmerken) {
+    //                 kenmerkHTML += '<option value="' + kenm.id + '">' + kenm.kenmerk + '</option>';
+    //             }
+    //             for (let toep of data.toepassingen) {
+    //                 toepassingHTML += '<option value="' + toep.id + '">' + toep.toepassing + '</option>';
+    //             }
+    //
+    //             kenmerk_select.innerHTML = kenmerkHTML;
+    //             toepassing_select.innerHTML = toepassingHTML;
+    //
+    //         })
+    //     });
+    // }
+    //
     const material_form = document.getElementById('material_form')
     material_form.addEventListener('change', function() {
         console.log('change detected')
@@ -200,7 +124,7 @@
                 <td class="col text-center align-middle">
                     <div class="d-flex justify-content-center  align-items-center">
                         <a href="/del/${rowNum}" title="Delete" class="text-dark-emphasis"><i class="fa-regular fa-trash-can"></i></a>
-                        <button class="btn text-dark-emphasis" title="Copy-to-Clipboard" value=${rowData} onclick="copyToClipboard(this)"><i class="fa-regular fa-clipboard"></i></button>
+                        <button class="btn text-dark-emphasis" title="Copy-to-Clipboard" value=${rowData} data-copy-to-clipboard><i class="fa-regular fa-clipboard"></i></button>
                     </div>
                 </td>
             `;
@@ -235,7 +159,7 @@
             });
 
             const csv = csvContent.join('\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
