@@ -29,59 +29,33 @@
 
 <!-- JS to change selections of 2nd and 3rd input select by the first -->
 <script>
-    // let naam_select = document.getElementById('naam_selection');
-    // let kenmerk_select = document.getElementById('kenmerk_selection');
-    // let toepassing_select = document.getElementById('toepassing_selection');
+    // const material_form = document.getElementById('material_form')
+    // material_form.addEventListener('change', function() {
+    //     console.log('change detected')
     //
-    // naam_select.onchange = function() {
-    //     let naam = naam_select.value;
+    //     const nlsfb_element = document.querySelector('[name="nlsfb"]');
+    //     let material_name = document.getElementById('material');
+    //     let extra_field_data = {}
+    //     let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"],[name="nlsfb"],[name^="select"]')
+    //     console.log(get_extra_fields)
+    //     for (let _item of get_extra_fields) {
+    //         console.log(_item.id, _item.name, _item.value);
+    //         extra_field_data[_item.name] = _item.value;
+    //     }
+    //     console.log(extra_field_data)
+    //     fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
+    //         response.json().then(function(return_data) {
+    //             material_name.innerText = return_data.material
+    //             console.log('finally Success!')
+    //             if (nlsfb_element) {
+    //                 nlsfb_element.value = return_data.nlsfb;
+    //                 console.log('nlsfb returned' + return_data.nlsfb);
     //
-    //     fetch('/naam/' + naam).then(function(response) {
-    //         response.json().then(function(data) {
-    //             let kenmerkHTML = '';
-    //             let toepassingHTML = '';
-    //
-    //             for (let kenm of data.kenmerken) {
-    //                 kenmerkHTML += '<option value="' + kenm.id + '">' + kenm.kenmerk + '</option>';
     //             }
-    //             for (let toep of data.toepassingen) {
-    //                 toepassingHTML += '<option value="' + toep.id + '">' + toep.toepassing + '</option>';
-    //             }
-    //
-    //             kenmerk_select.innerHTML = kenmerkHTML;
-    //             toepassing_select.innerHTML = toepassingHTML;
-    //
     //         })
     //     });
-    // }
     //
-    const material_form = document.getElementById('material_form')
-    material_form.addEventListener('change', function() {
-        console.log('change detected')
-
-        const nlsfb_element = document.querySelector('[name="nlsfb"]');
-        let material_name = document.getElementById('material');
-        let extra_field_data = {}
-        let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"],[name="nlsfb"],[name^="select"]')
-        console.log(get_extra_fields)
-        for (let _item of get_extra_fields) {
-            console.log(_item.id, _item.name, _item.value);
-            extra_field_data[_item.name] = _item.value;
-        }
-        console.log(extra_field_data)
-        fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
-            response.json().then(function(return_data) {
-                material_name.innerText = return_data.material
-                console.log('finally Success!')
-                if (nlsfb_element) {
-                    nlsfb_element.value = return_data.nlsfb;
-                    console.log('nlsfb returned' + return_data.nlsfb);
-
-                }
-            })
-        });
-
-    });
+    // });
 
 
 </script>
