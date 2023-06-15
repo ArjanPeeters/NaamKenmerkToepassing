@@ -72,7 +72,7 @@
         fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
             response.json().then(function(return_data) {
                 material_name.innerText = return_data.material
-                console.log('finally Success!')
+                console.log('finally Sss!')
                 if (nlsfb_element) {
                     nlsfb_element.value = return_data.nlsfb;
                     console.log('nlsfb returned' + return_data.nlsfb);
