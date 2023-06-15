@@ -108,12 +108,13 @@ def make_dropdown_list(naam):
     extra_lijst = naam_for_extra_lijst.extra_lijsten
     print('naam', naam_for_extra_lijst.naam, 'Extra_lijst:', extra_lijst)
 
-    drop_list['drop-items'].append({'type': 'dropdown-header', 'omschrijving': f'{naam_for_extra_lijst.naam}'})
-    for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
-        drop_list['drop-items'].append(
-            {'type': f'select_{naam_for_extra_lijst.naam}_{list_item}',
-             'omschrijving': f'{list_item}'}
-        )
+    if any(naam_for_extra_lijst.extra_lijst_dict()):
+        drop_list['drop-items'].append({'type': 'dropdown-header', 'omschrijving': f'{naam_for_extra_lijst.naam}'})
+        for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
+            drop_list['drop-items'].append(
+                {'type': f'select_{naam_for_extra_lijst.naam}_{list_item}',
+                 'omschrijving': f'{list_item}'}
+            )
 
     for field in ef.values():
         print(field)
