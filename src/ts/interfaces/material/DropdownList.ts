@@ -1,4 +1,4 @@
 export interface DropdownList {
-    type: number;
+    type: string;
     omschrijving: string;
 }

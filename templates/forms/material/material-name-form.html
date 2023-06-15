@@ -32,30 +32,28 @@
         <div class="col material_form_extra_field_group">
             <div class="input-group">
                 <label class="input-group-text text-secondary-emphasis" for="type-{{ extra.id }}">
-                    {{ drop_list['drop-items'][extra.type] }}
+                    {% for l in drop_list['drop-items'] %}
+                        {% if l.type == extra.type %}
+                            {{ l.omschrijving }}
+                        {% endif %}
+                    {% endfor %}
                 </label>
-                <button id="type-{{ extra.id }}"
-                        type="button"
-                        class="btn btn-outline-secondary dropdown-toggle text-secondary-emphasis extra-dropdown dropdown-toggle dropdown-toggle-split"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                >
+                <button id="type-{{ extra.id }}" type="button" class="btn btn-outline-secondary dropdown-toggle text-secondary-emphasis extra-dropdown dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
                 <ul class="dropdown-menu">
-                    {% for short, long in drop_list['drop-items'].items() %}
-                        {% if drop_list['extra_fields'][short] != extra.id and short in drop_list['extra_fields'].keys() %}
+                    {% for item in drop_list['drop-items'] %}
+                        {% if drop_list['extra_fields'][item.type] != extra.id and item.type in drop_list['extra_fields'].keys() %}
                             {% set menu_item_disabled = True %}
                         {% else %}
                             {% set menu_item_disabled = False %}
                         {% endif %}
 
-                        {% if short == 'dropdown-header' %}
-                            <li><div class="dropdown-header">{{ long }}</div></li>
+                        {% if item.type == 'dropdown-header' %}
+                            <li><div class="dropdown-header">{{ item.omschrijving }}</div></li>
                         {% else %}
-                            <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>
+                            <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ item.type }}">{{ item.omschrijving }}</a></li>
                         {% endif %}
-
                     {% endfor %}
                 </ul>
                 <!-- see what type of input is chosen -->
@@ -67,11 +65,12 @@
                     <select class="form-select form-control" name={{ extra.name }} value={{ extra.value }}>
                         {% for option in extra.select_list %}
                             <option {{ 'selected=""' if option == extra.value }}>{{ option }}</option>
-                        {% endfor %}
+                        {%  endfor %}
                     </select>
                 {% endif %}
                 <a href="/remove_field/{{ extra.id }}" class="btn btn-outline-secondary" type="button">-</a>
             </div>
         </div>
     {% endfor %}
+    {% endif %}
 </form>
