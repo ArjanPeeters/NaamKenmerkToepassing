@@ -10,6 +10,7 @@
             "@app-dependency-injection": ["src/ts/dependency-injection.ts"],
             "@app-forms": ["src/ts/forms/index.ts"],
             "@app-interfaces": ["src/ts/interfaces/index.ts"],
+            "@app-services": ["src/ts/services/index.ts"],
             "@app-styles/*": ["src/scss/*"],
             "@app-utils": ["src/ts/utils/index.ts"]
         }

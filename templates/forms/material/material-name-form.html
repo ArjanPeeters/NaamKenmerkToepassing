@@ -29,7 +29,7 @@
     <!-- optional extra fields -->
     {% for field in extra_fields %}
         {% set extra = extra_fields[field] %}
-        <div class="col material_form_extra_field_group">
+        <div class="col material_form_extra_field_group" data-group-id="{{extra.id}}">
             <div class="input-group">
                 <label class="input-group-text text-secondary-emphasis" for="type-{{ extra.id }}">
                     {% for l in drop_list['drop-items'] %}
@@ -72,5 +72,4 @@
             </div>
         </div>
     {% endfor %}
-    {% endif %}
 </form>

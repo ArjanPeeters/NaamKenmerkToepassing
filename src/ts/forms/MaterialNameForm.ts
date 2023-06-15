@@ -1,4 +1,4 @@
-import { Kenmerk, MaterialLists, Toepassing ,DropdownInformation, DropdownList } from '@app-interfaces';
+import { Kenmerk, MaterialLists, Toepassing ,DropdownInformation, DropdownListItem } from '@app-interfaces';
 
 export class MaterialNameForm {
 
@@ -7,15 +7,11 @@ export class MaterialNameForm {
     private toepassingSelectElement: HTMLSelectElement;
     private extraFieldGroupElements: NodeListOf<HTMLDivElement>;
 
-    // private dropdownElements: NodeListOf<HTMLOptionElement | HTMLOptGroupElement>;
-
     constructor() {
         this.naamSelectElement = document.querySelector('#naam_selection');
         this.kenmerkSelectElement = document.querySelector('#kenmerk_selection');
         this.toepassingSelectElement = document.querySelector('#toepassing_selection');
         this.extraFieldGroupElements = document.querySelectorAll('.material_form_extra_field_group');
-
-        // this.dropdownElements = document.querySelectorAll('.dropdown-menu');
 
         this.naamSelectElement.addEventListener('change', () => this.render());
     }
@@ -48,19 +44,31 @@ export class MaterialNameForm {
 
     private async renderExtraFieldGroupOptions(): Promise<void> {
         const dropdownInformation = await this.getCustomFieldList(this.naamSelectElement.value);
-        const items = dropdownInformation['drop-items'];
+        const options: DropdownListItem[] = dropdownInformation['drop-items'];
 
-        console.log({ items });
-        // this.extraFieldGroupElements.forEach((extraFieldGroupElement: HTMLDivElement) => {
-        //     const dropdownElement = extraFieldGroupElement.querySelector('.dropdown-menu');
-        //     const dropdownButtonElement = extraFieldGroupElement.querySelector('.dropdown-toggle');
-        //
-        //     dropdownInformation.list_items.forEach((item: DropdownList) => {
-        //         dropdownElement.innerHTML += `<li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ short }}">{{ long }}</a></li>`;
-        //     });
-        //
-        //     dropdownButtonElement.innerHTML = dropdownInformation.dropdown_name;
-        // });
+        this.extraFieldGroupElements.forEach((extraFieldGroupElement: HTMLDivElement) => {
+            const dropdownElement = extraFieldGroupElement.querySelector('.dropdown-menu');
+            const groupId = extraFieldGroupElement.dataset.groupId;
+            let dropdownHtml = '';
+
+            options.forEach((option: DropdownListItem) => {
+                if (option.type === 'dropdown-header') {
+                    dropdownHtml += `<li><div class="dropdown-header">${option.omschrijving}</div></li>`;
+                } else {
+                    dropdownHtml += `
+                        <li>
+                            <a class="dropdown-item"
+                               href="/change_field/${groupId}/${option.type}"
+                            >
+                                ${option.omschrijving}
+                            </a>
+                        </li>
+                    `;
+                }
+            });
+
+            dropdownElement.innerHTML = dropdownHtml;
+        });
     }
 
     private async render(): Promise<void> {

@@ -27,49 +27,23 @@
     </div>
 </div>
 
-<!-- JS to change selections of 2nd and 3rd input select by the first -->
-<script>
-    // const material_form = document.getElementById('material_form')
-    // material_form.addEventListener('change', function() {
-    //     console.log('change detected')
-    //
-    //     const nlsfb_element = document.querySelector('[name="nlsfb"]');
-    //     let material_name = document.getElementById('material');
-    //     let extra_field_data = {}
-    //     let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"],[name="nlsfb"],[name^="select"]')
-    //     console.log(get_extra_fields)
-    //     for (let _item of get_extra_fields) {
-    //         console.log(_item.id, _item.name, _item.value);
-    //         extra_field_data[_item.name] = _item.value;
-    //     }
-    //     console.log(extra_field_data)
-    //     fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
-    //         response.json().then(function(return_data) {
-    //             material_name.innerText = return_data.material
-    //             console.log('finally Success!')
-    //             if (nlsfb_element) {
-    //                 nlsfb_element.value = return_data.nlsfb;
-    //                 console.log('nlsfb returned' + return_data.nlsfb);
-    //
-    //             }
-    //         })
-    //     });
-    //
-    // });
-
-
-</script>
 <!-- if the save button has been pushed this list will be generated -->
 {% if selections|length > 0 %}
     <div class="container my-5">
         <div class="p-5 text-center bg-body-tertiary rounded-3">
             <div class="d-inline-flex gap-4 text-center mb-5">
-                <button class="btn btn-outline-light" onclick="downloadCSV()">Save to text</button>
+                <button class="btn btn-outline-light"
+                        data-action="csv:download"
+                        data-target=".material-list"
+                >
+                    <span class="fa fa-download"></span>
+                    Download as CSV
+                </button>
                 <a href="/del_list" class="btn btn-outline-secondary">Delete list</a>
             </div>
             <div class="container-lg">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table material-list">
                         <thead>
                             <tr>
                                 <th class="col">Rij</th>
@@ -113,34 +87,6 @@
         }
 
         createTableWithRows();
-
-        function downloadCSV() {
-            const table = document.querySelector('.table');
-            let csvContent = [];
-            let headerRow = [];
-            table.querySelectorAll('th').forEach(header => {
-                headerRow.push(`"${header.innerText.replace(/"/g, '""')}"`);
-            });
-            headerRow.pop();
-            csvContent.push(headerRow.join(','));
-
-            table.querySelectorAll('tbody tr').forEach(row => {
-                let rowData = [];
-                row.querySelectorAll('td:not(:last-child)').forEach(cell => {
-                    rowData.push(`"${cell.innerText.replace(/"/g, '""')}"`);
-                });
-                csvContent.push(rowData.join(','));
-            });
-
-            const csv = csvContent.join('\n');
-            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'Materiaalnamen.csv');
-            document.body.appendChild(link);
-            link.click();
-        }
 
     </script>
 {% endif %}

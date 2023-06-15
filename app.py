@@ -194,7 +194,7 @@ def update(num):
     cur['toepassing_selection'] = 1
     result = {'kenmerken': kenmerken,
               'toepassingen': toepassingen}
-    
+
     return jsonify(result)
 
 
