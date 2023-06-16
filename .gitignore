@@ -12,3 +12,4 @@
 /flask_session
 /static/*.js
 /static/*.css
+/DockerFile
