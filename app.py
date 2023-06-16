@@ -86,7 +86,8 @@ def create_material() -> str:
         print('value', value)
         # fist make the string Naa.k.t compliant
         clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
-        if clean_string != '':
+
+        if clean_string not in ['', '[geen-code]']:
             extra_string += f'_{clean_string}'
 
 
