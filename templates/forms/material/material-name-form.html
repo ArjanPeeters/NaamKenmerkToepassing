@@ -50,6 +50,7 @@
                         {% endif %}
 
                         {% if item.type == 'dropdown-header' %}
+                            <li><hr class="dropdown-divider"></li>
                             <li><div class="dropdown-header">{{ item.omschrijving }}</div></li>
                         {% else %}
                             <li><a class="dropdown-item {{ 'disabled' if menu_item_disabled else '' }}" href="/change_field/{{ extra.id }}/{{ item.type }}">{{ item.omschrijving }}</a></li>
