@@ -26,6 +26,36 @@
         </div>
     </div>
 </div>
+<script>
+    const material_form = document.getElementById('material_form')
+        material_form.addEventListener('change', function() {
+            console.log('change detected')
+
+            const nlsfb_element = document.querySelector('[name="nlsfb"]');
+            let material_name = document.getElementById('material');
+            let extra_field_data = {}
+            let get_extra_fields = document.querySelectorAll('[name^="extra_fields-"],[name$="selection"],[name="nlsfb"],[name^="select"]')
+            console.log(get_extra_fields)
+            for (let _item of get_extra_fields) {
+                console.log(_item.id, _item.name, _item.value);
+                extra_field_data[_item.name] = _item.value;
+            }
+            console.log(extra_field_data)
+            fetch(`/material?${new URLSearchParams(extra_field_data)}`).then(function(response) {
+                response.json().then(function(return_data) {
+                    material_name.innerText = return_data.material
+                    console.log('finally Success!')
+                    if (nlsfb_element) {
+                        nlsfb_element.value = return_data.nlsfb;
+                        console.log('nlsfb returned' + return_data.nlsfb);
+
+                    }
+                })
+            });
+        })
+
+</script>
+
 
 <!-- if the save button has been pushed this list will be generated -->
 {% if selections|length > 0 %}
