@@ -53,7 +53,10 @@ export class MaterialNameForm {
 
             options.forEach((option: DropdownListItem) => {
                 if (option.type === 'dropdown-header') {
-                    dropdownHtml += `<li><div class="dropdown-header">${option.omschrijving}</div></li>`;
+                    dropdownHtml += `
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><div class="dropdown-header">${option.omschrijving}</div></li>
+                                    `;
                 } else {
                     dropdownHtml += `
                         <li>

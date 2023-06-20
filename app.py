@@ -72,31 +72,6 @@ def get_nlsfb(naam: int, kenmerk: int):
 
 
 # create a string with the correct material name
-def create_material() -> str:
-    session_current()
-    selection = session['current']['selection']
-
-    n_element = get_naam(selection.get('naam_selection', 1))
-    k_element = get_kenmerk(selection.get('kenmerk_selection', 1))
-    t_element = get_toepassing(selection.get('toepassing_selection', 1))
-    extra_string = ''
-
-    session_extra_fields()
-    for value in session['extra_fields'].values():
-        print('value', value)
-        # fist make the string Naa.k.t compliant
-        clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
-
-        if clean_string not in ['', '[geen-code]']:
-            extra_string += f'_{clean_string}'
-
-
-    _string = f'{n_element.naam}_{k_element.kenmerk}_{t_element.toepassing}{extra_string}'
-    print(_string)
-    session['current']['material_name'] = _string
-    return _string
-
-
 def make_dropdown_list(naam):
     session_extra_fields()
     ef = session['extra_fields']
@@ -128,6 +103,31 @@ def make_dropdown_list(naam):
 @app.route('/get_dropdowns/<naam>')
 def get_dropdownlist(naam):
     return jsonify(make_dropdown_list(naam))
+
+
+def create_material() -> str:
+    session_current()
+    selection = session['current']['selection']
+
+    n_element = get_naam(selection.get('naam_selection', 1))
+    k_element = get_kenmerk(selection.get('kenmerk_selection', 1))
+    t_element = get_toepassing(selection.get('toepassing_selection', 1))
+    extra_string = ''
+
+    session_extra_fields()
+    for value in session['extra_fields'].values():
+        print('value', value)
+        # fist make the string Naa.k.t compliant
+        clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
+
+        if clean_string not in ['', '[geen-code]']:
+            extra_string += f'_{clean_string}'
+
+
+    _string = f'{n_element.naam}_{k_element.kenmerk}_{t_element.toepassing}{extra_string}'
+    print(_string)
+    session['current']['material_name'] = _string
+    return _string
 
 
 @app.route('/', methods=['GET', 'POST'])
