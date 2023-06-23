@@ -62,6 +62,8 @@ export class MaterialNameForm {
                         <li>
                             <a class="dropdown-item"
                                href="/change_field/${groupId}/${option.type}"
+                               data-dorpdown-type="${option.type}"
+                               data-dropdown-id="${groupId}"
                             >
                                 ${option.omschrijving}
                             </a>
