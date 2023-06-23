@@ -241,6 +241,8 @@ def material():
 def add_item():
 
     session_current()
+    if 'created_materials' not in session:
+        session['created_materials'] = []
     if session['current']['material_name'] not in session['created_materials']:
         session['created_materials'].insert(0, session['current']['material_name'])
     else:
