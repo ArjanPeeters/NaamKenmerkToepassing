@@ -187,6 +187,7 @@ def test(naam):
 def update(num):
     filter_naam = Naam.query.filter_by(id=num).first()
     print(filter_naam.naam)
+    session_current()
     cur = session['current']['selection']
     kenmerken = [{'id': k.id, 'kenmerk': k.kenmerk} for k in filter_naam.kenmerken]
     toepassingen = [{'id': t.id, 'toepassing': t.toepassing} for t in filter_naam.toepassingen]
