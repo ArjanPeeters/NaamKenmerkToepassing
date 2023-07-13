@@ -61,7 +61,7 @@
                 {% if extra.type == 'input' %}
                     <input type="text" class="form-control" name="{{ extra.name }}" value="{{ '' if 'value' not in extra.keys() else extra.value }}" data-input-type="{{ extra.type }}">
                 {% elif extra.type == 'nlsfb' %}
-                    <input type="search" class="form-control" name='nlsfb' value="{{ '[code]' if 'value' not in extra.keys() else extra.value }}" data-input-type="{{ extra.type }}">
+                    <input type="search" class="form-control" name='nlsfb' value="{{ '[code]' if 'value' not in extra.keys() else extra.value }}" data-input-type="{{ extra.type }}" disabled>
                 {% elif extra.type.startswith('select_') %}
                     <select class="form-select form-control" name={{ extra.name }} value="{{ extra.value }}" data-input-type="{{ extra.type }}">
                         {% for option in extra.select_list %}
