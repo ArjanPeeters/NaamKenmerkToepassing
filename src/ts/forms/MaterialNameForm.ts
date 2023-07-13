@@ -49,6 +49,7 @@ export class MaterialNameForm {
         this.extraFieldGroupElements.forEach((extraFieldGroupElement: HTMLDivElement) => {
             const dropdownElement = extraFieldGroupElement.querySelector('.dropdown-menu');
             const groupId = extraFieldGroupElement.dataset.groupId;
+
             let dropdownHtml = '';
 
             options.forEach((option: DropdownListItem) => {
