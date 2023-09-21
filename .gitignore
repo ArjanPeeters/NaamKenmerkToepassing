@@ -3,7 +3,13 @@
 /renew_db.py
 /Backup/
 /Docker*
-/.*
+/._*
+/.DS_Store
 *test*
 /Add_list_to_db.py
 /test*
+/node_modules
+/flask_session
+/static/*.js
+/static/*.css
+/DockerFile

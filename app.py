@@ -72,6 +72,39 @@ def get_nlsfb(naam: int, kenmerk: int):
 
 
 # create a string with the correct material name
+def make_dropdown_list(naam):
+    session_extra_fields()
+    ef = session['extra_fields']
+    drop_list = {'drop-items': [{'type': 'input', 'omschrijving': 'Vrij invulveld'},
+                                {'type': 'nlsfb', 'omschrijving': 'NL-SfB'},
+                                {'type': 'select_ral', 'omschrijving': 'RAL kleur'}],
+                 'extra_fields': {}}
+
+    naam_for_extra_lijst = Naam.query.filter_by(id=naam).first()
+    extra_lijst = naam_for_extra_lijst.extra_lijsten
+    print('naam', naam_for_extra_lijst.naam, 'Extra_lijst:', extra_lijst)
+
+    if any(naam_for_extra_lijst.extra_lijst_dict()):
+        drop_list['drop-items'].append({'type': 'dropdown-header', 'omschrijving': f'{naam_for_extra_lijst.naam}'})
+        for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
+            drop_list['drop-items'].append(
+                {'type': f'select_{naam_for_extra_lijst.naam}_{list_item}',
+                 'omschrijving': f'{list_item}'}
+            )
+
+    for field in ef.values():
+        print(field)
+        if field['type'] != 'input':
+            drop_list['extra_fields'][field['type']] = field['id']
+    print('droplist:', drop_list)
+    return drop_list
+
+
+@app.route('/get_dropdowns/<naam>')
+def get_dropdownlist(naam):
+    return jsonify(make_dropdown_list(naam))
+
+
 def create_material() -> str:
     session_current()
     selection = session['current']['selection']
@@ -86,7 +119,8 @@ def create_material() -> str:
         print('value', value)
         # fist make the string Naa.k.t compliant
         clean_string = value['value'].replace('.', '').replace(' ', '-').lower()
-        if clean_string != '':
+
+        if clean_string not in ['', '[geen-code]']:
             extra_string += f'_{clean_string}'
 
 
@@ -96,28 +130,6 @@ def create_material() -> str:
     return _string
 
 
-def make_dropdown_list():
-    session_extra_fields()
-    ef = session['extra_fields']
-    drop_list = {'drop-items': {'input': 'Vrij invulveld', 'nlsfb': 'NL-SfB', 'select_ral': 'RAL kleur'},
-                 'extra_fields': {}}
-
-    naam_for_extra_lijst = get_naam(_id=session['current']['selection'].get('naam_selection', 1))
-    extra_lijst = naam_for_extra_lijst.extra_lijsten
-    print('naam', naam_for_extra_lijst.naam, 'Extra_lijst:', extra_lijst)
-
-    drop_list['drop-items']['dropdown-header'] = f'{naam_for_extra_lijst.naam}'
-    for list_item in naam_for_extra_lijst.extra_lijst_dict().keys():
-        drop_list['drop-items'][f'select_{naam_for_extra_lijst.naam}_{list_item}'] = f'{list_item}'
-
-    for field in ef.values():
-        print(field)
-        if field['type'] != 'input':
-            drop_list['extra_fields'][field['type']] = field['id']
-
-    return drop_list
-
-# Main page
 @app.route('/', methods=['GET', 'POST'])
 def index():
 
@@ -155,7 +167,8 @@ def index():
         materials_list.append([i])
 
     return render_template('index.html', formulier=formulier, selections=materials_list, materiaal=materiaal_naam,
-                           extra_fields=session['extra_fields'], drop_list=make_dropdown_list())
+                           extra_fields=session['extra_fields'], drop_list=make_dropdown_list(session['current']['selection'].get('naam_selection', 1)))
+# Main page
 
 
 @app.route('/test/<naam>')
@@ -174,6 +187,7 @@ def test(naam):
 def update(num):
     filter_naam = Naam.query.filter_by(id=num).first()
     print(filter_naam.naam)
+    session_current()
     cur = session['current']['selection']
     kenmerken = [{'id': k.id, 'kenmerk': k.kenmerk} for k in filter_naam.kenmerken]
     toepassingen = [{'id': t.id, 'toepassing': t.toepassing} for t in filter_naam.toepassingen]
@@ -181,10 +195,8 @@ def update(num):
     cur['kenmerk_selection'] = 1
     cur['toepassing_selection'] = 1
     result = {'kenmerken': kenmerken,
-              'toepassingen': toepassingen,
-              'material': create_material(),
-              'drop-list': make_dropdown_list()}
-    
+              'toepassingen': toepassingen}
+
     return jsonify(result)
 
 
@@ -230,6 +242,8 @@ def material():
 def add_item():
 
     session_current()
+    if 'created_materials' not in session:
+        session['created_materials'] = []
     if session['current']['material_name'] not in session['created_materials']:
         session['created_materials'].insert(0, session['current']['material_name'])
     else:
