@@ -170,6 +170,10 @@ def index():
                            extra_fields=session['extra_fields'], drop_list=make_dropdown_list(session['current']['selection'].get('naam_selection', 1)))
 # Main page
 
+@app.route('/ifc')
+def ifc():
+    render_template('ifc.html')
+
 
 @app.route('/test/<naam>')
 def test(naam):
