@@ -172,7 +172,7 @@ def index():
 
 @app.route('/ifc')
 def ifc():
-    render_template('ifc.html')
+    return render_template('ifc.html')
 
 
 @app.route('/test/<naam>')

@@ -4,12 +4,15 @@
   "scripts": {
     "prod": "npx webpack --env=production",
     "dev": "npx webpack",
-    "watch": "npx webpack --watch"
+    "watch": "npx webpack --watch",
+    "start": "node NaamKenmerkToepassing"
   },
   "dependencies": {
     "@jjwesterkamp/event-delegation": "^2.0.6",
+    "@mikro-orm/cli": "^5.8.7",
     "bim-components": "^0.1.0",
     "bootstrap": "^5.3.0",
+    "openbim-components": "^1.1.2",
     "three": "^0.157.0"
   },
   "devDependencies": {
@@ -21,6 +24,7 @@
     "@types/webpack": "^5.28.0",
     "autoprefixer": "^10.4.12",
     "css-loader": "^6.7.1",
+    "husky": "^4.3.8",
     "mini-css-extract-plugin": "^2.6.1",
     "postcss-loader": "^7.0.1",
     "sass": "^1.55.0",
