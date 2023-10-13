@@ -25,9 +25,14 @@ export class ClipboardHelper {
             await navigator.clipboard.writeText(value);
             console.debug(`Value '${value}' copied to clipboard`);
         } catch (error) {
-            console.error('Error copying to clipboard:', error);
-            alert('Failed to copy to clipboard. Please check your browser permissions or copy manually.');
-        }
+            navigator.permissions.query({ name: "clipboard-write" }).then((result) => {
+              if (result.state === "granted" || result.state === "prompt") {
+                /* write to the clipboard now */
+              } else {
+                  console.error('Error copying to clipboard:', error);
+                  alert('Failed to copy to clipboard. Please check your browser permissions or copy manually.');
+              }
+            });
 
         if (isHyperlink) {
             location.href = element.href;
@@ -35,4 +40,4 @@ export class ClipboardHelper {
 
     }
 
-}
+}}
