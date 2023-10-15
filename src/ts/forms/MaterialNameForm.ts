@@ -13,6 +13,10 @@ export class MaterialNameForm {
         this.toepassingSelectElement = document.querySelector('#toepassing_selection');
         this.extraFieldGroupElements = document.querySelectorAll('.material_form_extra_field_group');
 
+        if (! this.naamSelectElement) {
+            return;
+        }
+
         this.naamSelectElement.addEventListener('change', () => this.render());
     }
 

@@ -14,6 +14,10 @@ export class MaterialNameUpdate {
         this.toepassingSelectionElement = document.querySelector('.form-control.toepassing');
         this.naamSelectionElement = document.querySelector('.form-control.naam');
 
+        if (! this.materialFormElement) {
+            return;
+        }
+
         this.materialFormElement.addEventListener('change', () => this.render());
         this.naamSelectionElement.addEventListener('change', () => this.resetSelections());
     }
