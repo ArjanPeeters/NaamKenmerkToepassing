@@ -46,17 +46,17 @@ def session_extra_fields():
 
 
 # returns the correct naam from the database by id
-def get_naam(_id: int) -> 'Naam element':
+def get_naam(_id: int):
     return Naam.query.filter_by(id=_id).first()
 
 
 # returns the correct kenmerk from the database by id
-def get_kenmerk(_id: int) -> 'Kenmerk element':
+def get_kenmerk(_id: int):
     return Kenmerk.query.filter_by(id=_id).first()
 
 
 # returns the correct toepassing from the database by id
-def get_toepassing(_id: int) -> 'Toepassing element':
+def get_toepassing(_id: int):
     return Toepassing.query.filter_by(id=_id).first()
 
 
