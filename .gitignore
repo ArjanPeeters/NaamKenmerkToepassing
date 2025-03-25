@@ -26,3 +26,5 @@ dist/
 htmlcov/
 .tox/
 docs/_build/
+/migrateSQLlite.py
+test.py

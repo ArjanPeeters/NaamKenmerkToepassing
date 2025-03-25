@@ -17,7 +17,7 @@ naam_extra_lijsten_tabel = db.Table('naam_extra_lijsten',
 
 class Naam(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    naam = db.Column(db.String(25), index=True, unique=True)
+    naam = db.Column(db.String(50), index=True, unique=True)
     kenmerken = db.relationship('Kenmerk',
                                 secondary=naam_kenmerk_tabel,
                                 lazy='subquery',
@@ -47,7 +47,7 @@ class Naam(db.Model):
 
 class Kenmerk(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    kenmerk = db.Column(db.String(25), index=True, unique=True)
+    kenmerk = db.Column(db.String(50), index=True, unique=True)
 
     def __repr__(self):
         return f'Kenmerk:{self.kenmerk}, namen:{len(self.namen)}'
@@ -55,7 +55,7 @@ class Kenmerk(db.Model):
 
 class Toepassing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    toepassing = db.Column(db.String(25), index=True, unique=True)
+    toepassing = db.Column(db.String(50), index=True, unique=True)
 
     def __repr__(self):
         return f'Toepassing:{self.toepassing}, namen:{len(self.namen)}'
@@ -67,7 +67,7 @@ class Select_RAL(db.Model):
     r = db.Column(db.Integer)
     g = db.Column(db.Integer)
     b = db.Column(db.Integer)
-    omschrijving = db.Column(db.String(20))
+    omschrijving = db.Column(db.String(50))
 
     def __repr__(self):
         return f'RAL: {self.nummer}, R{self.r} G{self.g} B{self.b}, -> {self.omschrijving}'
@@ -85,8 +85,8 @@ class Select_NLSFB(db.Model):
 class ExtraLijsten(db.Model):
     __tablename__ = 'extralijsten'
     id = db.Column(db.Integer, primary_key=True)
-    soort = db.Column(db.String(20))
-    omschrijving = db.Column(db.String(25), index=True)
+    soort = db.Column(db.String(50))
+    omschrijving = db.Column(db.String(100), index=True)
 
     def __repr__(self):
         return f'soort:{self.soort}, omschrijving: {self.omschrijving}, hoort bij:{self.namen}'
