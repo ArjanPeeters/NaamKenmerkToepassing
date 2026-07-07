@@ -28,3 +28,4 @@ htmlcov/
 docs/_build/
 /migrateSQLlite.py
 test.py
+instance/NaamKenmerkToepassing.db.bak
