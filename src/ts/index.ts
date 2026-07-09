@@ -10,9 +10,11 @@ interface NaamEntry {
     extra_lijsten: Record<string, string[]>; // soort -> [omschrijving, ...]
 }
 interface RalEntry { nummer: string; omschrijving: string; r: number; g: number; b: number; }
-interface Data { namen: NaamEntry[]; ral: RalEntry[]; nlsfb: Record<string, string>; }
+interface Data { namen: NaamEntry[]; ral: RalEntry[]; nlsfb: Record<string, string>; synonyms: Record<string, string>; }
 
 interface ExtraField { id: number; type: string; value: string; }
+
+interface SearchCand { label: string; naam: string; kenmerk?: string; toepassing?: string; text: string; }
 
 interface DropItem { type: string; omschrijving: string; }
 
@@ -31,6 +33,9 @@ class App {
     private toepassing = '';
     private extras: ExtraField[] = [];
     private saved: string[] = [];
+    private searchIndex: SearchCand[] = [];
+    private searchResults: SearchCand[] = [];
+    private searchTimer: any;
 
     async init(): Promise<void> {
         this.data = await (await fetch('static/data.json')).json();
@@ -41,8 +46,23 @@ class App {
         this.kenmerk = first.kenmerken[0] ?? '';
         this.toepassing = first.toepassingen[0] ?? '';
 
+        this.buildSearchIndex();
         this.wire();
         this.render();
+    }
+
+    private buildSearchIndex(): void {
+        const idx: SearchCand[] = [];
+        for (const n of this.data.namen) {
+            for (const k of n.kenmerken) {
+                const syn = this.data.synonyms[`${n.naam}_${k}`] || '';
+                idx.push({ label: `${n.naam} · ${k}`, naam: n.naam, kenmerk: k, text: `${n.naam} ${k} ${syn}`.toLowerCase() });
+            }
+            for (const t of n.toepassingen) {
+                idx.push({ label: `${n.naam} · … · ${t}`, naam: n.naam, toepassing: t, text: `${n.naam} ${t}`.toLowerCase() });
+            }
+        }
+        this.searchIndex = idx;
     }
 
     // ---- helpers ----
@@ -101,17 +121,61 @@ class App {
     }
 
     // ---- state changes ----
-    private onNaamChange(naam: string): void {
-        this.naam = naam;
-        const e = this.entry();
-        this.kenmerk = e.kenmerken[0] ?? '';
-        this.toepassing = e.toepassingen[0] ?? '';
+    private revalidateExtras(): void {
         for (const f of this.extras) {
             if (f.type === 'nlsfb') f.value = this.nlsfbFor();
             else if (f.type.startsWith('select_') && f.type !== 'select_ral' && this.selectList(f.type).length === 0) {
                 f.type = 'input'; f.value = '';
             }
         }
+    }
+
+    private onNaamChange(naam: string): void {
+        this.naam = naam;
+        const e = this.entry();
+        this.kenmerk = e.kenmerken[0] ?? '';
+        this.toepassing = e.toepassingen[0] ?? '';
+        this.revalidateExtras();
+        this.render();
+    }
+
+    // ---- search ----
+    private doSearch(q: string): void {
+        const box = document.querySelector<HTMLElement>('#search_results')!;
+        const query = q.toLowerCase().trim();
+        if (query.length < 2) { this.searchResults = []; box.innerHTML = ''; box.style.display = 'none'; return; }
+
+        const terms = query.split(/\s+/).filter(Boolean);
+        const hits = this.searchIndex.filter((c) => terms.every((t) => c.text.includes(t)));
+        // woordbegin-treffers eerst, daarna kortere (specifiekere) labels
+        hits.sort((a, b) => this.score(b, query) - this.score(a, query) || a.label.length - b.label.length);
+        this.searchResults = hits.slice(0, 8);
+
+        box.innerHTML = this.searchResults.map((c, i) =>
+            `<li class="list-group-item list-group-item-action" data-search-i="${i}" role="button">${esc(c.label)}</li>`).join('');
+        box.style.display = this.searchResults.length ? 'block' : 'none';
+    }
+
+    private score(c: SearchCand, q: string): number {
+        return c.text.split(' ').some((w) => w.startsWith(q)) ? 2 : 0;
+    }
+
+    private hideResults(): void {
+        const box = document.querySelector<HTMLElement>('#search_results')!;
+        box.innerHTML = ''; box.style.display = 'none';
+        this.searchResults = [];
+    }
+
+    private applySearch(i: number): void {
+        const c = this.searchResults[i];
+        if (!c) return;
+        this.naam = c.naam;
+        const e = this.entry();
+        this.kenmerk = c.kenmerk && e.kenmerken.includes(c.kenmerk) ? c.kenmerk : (e.kenmerken[0] ?? '');
+        this.toepassing = c.toepassing && e.toepassingen.includes(c.toepassing) ? c.toepassing : (e.toepassingen[0] ?? '');
+        this.revalidateExtras();
+        (document.querySelector<HTMLInputElement>('#material_search')!).value = '';
+        this.hideResults();
         this.render();
     }
 
@@ -240,6 +304,16 @@ class App {
 
     // ---- events (delegated, survive innerHTML rebuilds) ----
     private wire(): void {
+        const search = document.querySelector<HTMLInputElement>('#material_search')!;
+        search.addEventListener('input', () => {
+            clearTimeout(this.searchTimer);
+            this.searchTimer = setTimeout(() => this.doSearch(search.value), 120);
+        });
+        search.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') { ev.preventDefault(); if (this.searchResults.length) this.applySearch(0); }
+            else if (ev.key === 'Escape') this.hideResults();
+        });
+
         document.addEventListener('change', (ev) => {
             const t = ev.target as HTMLElement;
             if (t.id === 'naam_selection') this.onNaamChange((t as HTMLSelectElement).value);
@@ -252,7 +326,25 @@ class App {
         });
 
         document.addEventListener('click', (ev) => {
-            const el = (ev.target as HTMLElement).closest<HTMLElement>(
+            const target = ev.target as HTMLElement;
+
+            // loep-knop: zoekbalk tonen/verbergen + focus
+            if (target.closest('[data-toggle-search]')) {
+                const box = document.querySelector('.material-search')!;
+                const show = box.classList.contains('d-none');
+                box.classList.toggle('d-none');
+                if (show) (document.querySelector<HTMLInputElement>('#material_search')!).focus();
+                else this.hideResults();
+                return;
+            }
+
+            // zoekresultaat aangeklikt
+            const res = target.closest<HTMLElement>('[data-search-i]');
+            if (res) { this.applySearch(+res.dataset.searchI!); return; }
+            // klik buiten de zoekbalk -> resultaten sluiten
+            if (!target.closest('.material-search')) this.hideResults();
+
+            const el = target.closest<HTMLElement>(
                 '[data-set-type],[data-remove-field],[data-add-field],[data-save],[data-del-list],[data-del-index]');
             if (!el) return;
             const d = el.dataset;

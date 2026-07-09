@@ -23,6 +23,27 @@ html, body {
     height: 2rem;
 }
 
+/* Zoekbalk + resultatenlijst (dropdown onder het invoerveld) */
+.material-search {
+    position: relative;
+    max-width: 600px;
+}
+
+.material-search #search_results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    max-height: 340px;
+    overflow-y: auto;
+    display: none; /* JS zet 'block' zodra er treffers zijn */
+}
+
+.material-search #search_results .list-group-item {
+    cursor: pointer;
+}
+
 /* Velden verdelen zich over de breedte; max 4 per rij, daarna wrap naar een nieuwe rij */
 .material-fields {
     display: flex;

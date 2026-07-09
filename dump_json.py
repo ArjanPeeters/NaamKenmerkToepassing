@@ -10,7 +10,7 @@ import json
 
 from flask import Flask
 
-from dbModels import db, Naam, Select_RAL, Select_NLSFB
+from dbModels import db, Naam, Select_RAL, Select_NLSFB, Synoniem
 
 DB_PATH = 'instance/NaamKenmerkToepassing.db'
 OUT = 'static/data.json'
@@ -33,7 +33,10 @@ def build():
     # 'naam_kenmerk' -> nlsfb-code
     nlsfb = {s.materiaal: s.nlsfb for s in Select_NLSFB.query.all()}
 
-    return {'namen': namen, 'ral': ral, 'nlsfb': nlsfb}
+    # 'naam_kenmerk' -> zoekwoorden (synoniemen)
+    synonyms = {s.materiaal: s.woorden for s in Synoniem.query.all()}
+
+    return {'namen': namen, 'ral': ral, 'nlsfb': nlsfb, 'synonyms': synonyms}
 
 
 def run():
@@ -50,7 +53,7 @@ def run():
 
     import os
     print(f'{OUT}: {len(data["namen"])} namen, {len(data["ral"])} RAL, '
-          f'{len(data["nlsfb"])} nlsfb  ({os.path.getsize(OUT)} bytes)')
+          f'{len(data["nlsfb"])} nlsfb, {len(data["synonyms"])} synoniemen  ({os.path.getsize(OUT)} bytes)')
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ from datetime import datetime
 import openpyxl
 from flask import Flask
 
-from dbModels import db, Naam, Kenmerk, Toepassing, Select_NLSFB
+from dbModels import db, Naam, Kenmerk, Toepassing, Select_NLSFB, Synoniem
 
 DEFAULT_XLSX = r'C:\OneDrive\OneDrive - BIMnerd\BIM repo\NAAKT\EenduidigeMateriaalbenaming_lijst v2.5.xlsm'
 DB_PATH = 'instance/NaamKenmerkToepassing.db'
@@ -30,9 +30,10 @@ def norm(v):
 def parse_excel(path):
     wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
 
-    # --- NAA.K.T.: namen, kenmerken per naam, NL-SfB per naam_kenmerk ---
+    # --- NAA.K.T.: namen, kenmerken per naam, NL-SfB + synoniemen per naam_kenmerk ---
     kenmerken = {}   # naam -> [kenmerk, ...] (volgorde behouden, uniek)
     nlsfb = {}       # 'naam_kenmerk' -> 'f2'
+    synoniemen = {}  # 'naam_kenmerk' -> 'zoekwoorden ...' (kolom D)
     for row in wb['NAA.K.T.'].iter_rows(min_row=7, values_only=True):
         naam, kenmerk = norm(row[1]), norm(row[2])
         if not naam:
@@ -44,6 +45,9 @@ def parse_excel(path):
             code = (str(row[6]).strip() if row[6] else '') + (str(row[7]).strip() if row[7] else '')
             if code:
                 nlsfb.setdefault(f'{naam}_{kenmerk}', code)
+            syn = str(row[3]).strip().lower() if row[3] else ''
+            if syn:
+                synoniemen.setdefault(f'{naam}_{kenmerk}', syn)
 
     # --- TOEPASSINGEN: kolom per naam ---
     toepassingen = {}  # naam -> [toepassing, ...]
@@ -58,7 +62,7 @@ def parse_excel(path):
             if t and t not in toepassingen[naam]:
                 toepassingen[naam].append(t)
 
-    return kenmerken, toepassingen, nlsfb
+    return kenmerken, toepassingen, nlsfb, synoniemen
 
 
 def get_or_create(model, attr, value, cache):
@@ -76,7 +80,7 @@ def run(xlsx_path):
     shutil.copy2(DB_PATH, f'{DB_PATH}.bak')
     print(f'Backup -> {DB_PATH}.bak')
 
-    kenmerken, toepassingen, nlsfb = parse_excel(xlsx_path)
+    kenmerken, toepassingen, nlsfb, synoniemen = parse_excel(xlsx_path)
     alle_namen = set(kenmerken) | set(toepassingen)
 
     app = Flask(__name__)
@@ -85,6 +89,7 @@ def run(xlsx_path):
     db.init_app(app)
 
     with app.app_context():
+        db.create_all()  # maakt ontbrekende tabellen (o.a. synoniem) aan, laat bestaande met rust
         k_cache, t_cache = {}, {}
         for naam in sorted(alle_namen):
             n = get_or_create(Naam, 'naam', naam, {})
@@ -100,6 +105,13 @@ def run(xlsx_path):
             else:
                 obj.nlsfb = code
 
+        for materiaal, woorden in synoniemen.items():
+            obj = Synoniem.query.filter_by(materiaal=materiaal).first()
+            if obj is None:
+                db.session.add(Synoniem(materiaal=materiaal, woorden=woorden))
+            else:
+                obj.woorden = woorden
+
         db.session.flush()
         # wees-records opruimen (kenmerk/toepassing zonder naam)
         for obj in Kenmerk.query.all():
@@ -111,7 +123,8 @@ def run(xlsx_path):
         db.session.commit()
 
         print(f'namen={Naam.query.count()} kenmerken={Kenmerk.query.count()} '
-              f'toepassingen={Toepassing.query.count()} nlsfb={Select_NLSFB.query.count()}')
+              f'toepassingen={Toepassing.query.count()} nlsfb={Select_NLSFB.query.count()} '
+              f'synoniemen={Synoniem.query.count()}')
 
 
 if __name__ == '__main__':

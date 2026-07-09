@@ -82,6 +82,15 @@ class Select_NLSFB(db.Model):
         return f'{self.materiaal}_{self.nlsfb}'
 
 
+class Synoniem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    materiaal = db.Column(db.String(60), index=True, unique=True)  # 'naam_kenmerk'
+    woorden = db.Column(db.String(400))
+
+    def __repr__(self):
+        return f'{self.materiaal}: {self.woorden}'
+
+
 class ExtraLijsten(db.Model):
     __tablename__ = 'extralijsten'
     id = db.Column(db.Integer, primary_key=True)
