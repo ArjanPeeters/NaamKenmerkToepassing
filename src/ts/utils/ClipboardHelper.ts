@@ -21,24 +21,34 @@ export class ClipboardHelper {
             event.preventDefault();
         }
 
+        // navigator.clipboard bestaat alleen in een secure context (https/localhost);
+        // over http (bv. LAN-IP) valt-ie terug op de legacy execCommand-methode.
         try {
-            await navigator.clipboard.writeText(value);
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(value);
+            } else {
+                this.legacyCopy(value);
+            }
             console.debug(`Value '${value}' copied to clipboard`);
         } catch (error) {
-            navigator.permissions.query({ name: "clipboard-write" as PermissionName}).then((result) => {
-              if (result.state === "granted" || result.state === "prompt") {
-                navigator.clipboard.writeText(value);
-                console.debug(`Value '${value}' copied to clipboard`);
-              } else {
-                  console.error('Error copying to clipboard:', error);
-                  alert('Failed to copy to clipboard. Please check your browser permissions or copy manually.');
-              }
-            });
+            console.error('Error copying to clipboard:', error);
+            alert('Failed to copy to clipboard. Please check your browser permissions or copy manually.');
+        }
 
         if (isHyperlink) {
             location.href = element.href;
         }
-
     }
 
-}}
+    private legacyCopy(value: string): void {
+        const ta = document.createElement('textarea');
+        ta.value = value;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+    }
+
+}

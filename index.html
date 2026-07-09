@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Naam Kenmerk Toepassing</title>
+    <meta property="og:title" content="Naam Kenmerk Toepassing">
+    <meta property="og:description" content="Een eenduidige materiaalbenaming voor de bouw die je zelf mag aankleden">
+    <meta property="og:image" content="static/Logo_MateriaalBenaming.png">
+    <meta property="og:url" content="https://naamkenmerktoepassing.nl">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
+    <!-- ponytail: ?v bump forceert verse CSS/JS na een deploy; hoog dit op bij een nieuwe versie -->
+    <link rel="stylesheet" type="text/css" href="static/style.css?v=2.5.2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="shortcut icon" href="static/favicon.ico">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary rounded" aria-label="navbar">
+    <div class="container-fluid" id="NavBar">
+        <div class="collapse navbar-collapse d-lg-flex">
+            <div class="nav-item">
+                <a class="navbar-brand mx-auto" href="https://www.bimnerd.nl" target="_blank">
+                    <img src="static/Logo_BIMnerd.png" alt="BIMnerd Logo" width="auto" height="40" class="d-inline-block align-text-top">
+                </a>
+            </div>
+        </div>
+        <ul class="navbar-nav col-lg-6 justify-content-lg-center">
+            <li class="nav-item">
+                <a class="navbar-brand mx-auto" href="https://www.digigo.nu/ilsen-en-richtlijnen/tools-voor-informatiemanagement/naa-k-t/" target="_blank">
+                    <img src="static/Logo_MateriaalBenaming.png" alt="Naa.K.T. Logo" width="auto" height="50" class="d-inline-block align-text-top">
+                </a>
+            </li>
+        </ul>
+        <div class="d-lg-flex col-lg-3 justify-content-lg-end">
+            <div class="nav-item">
+                <a class="nav-link" href="https://github.com/ArjanPeeters/NaamKenmerkToepassing">
+                    <i class="fa-brands fa-square-github fa-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- jumbotron -->
+<div class="container my-5">
+    <div class="p-5 text-center bg-body-tertiary rounded-3">
+        <h1 class="text-body-emphasis" id="material"></h1>
+        <div class="divider-invisible"></div>
+
+        <form class="material-fields" id="material_form" name="material_form">
+            <div class="field-col">
+                <div class="input-group">
+                    <span class="input-group-text naam">Naam</span>
+                    <select class="form-control naam" id="naam_selection"></select>
+                </div>
+            </div>
+            <div class="field-col">
+                <div class="input-group">
+                    <span class="input-group-text kenmerk">Kenmerk</span>
+                    <select class="form-control kenmerk" id="kenmerk_selection"></select>
+                </div>
+            </div>
+            <div class="field-col">
+                <div class="input-group">
+                    <span class="input-group-text toepassing">Toepassing</span>
+                    <select class="form-control toepassing" id="toepassing_selection"></select>
+                </div>
+            </div>
+            <!-- extra fields are appended here (as .field-col siblings) by scripts.js -->
+        </form>
+
+        <div class="divider-invisible"></div>
+        <div class="d-inline-flex gap-4 text-center mb-5">
+            <button title="Save"
+                    class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill"
+                    id="save_button"
+                    data-save
+                    data-copy-to-clipboard="#material">
+                <i class="fa-regular fa-clipboard"></i>&nbsp; + &nbsp;<i class="fa-solid fa-list-ol"></i>
+            </button>
+            <button title="Add Field" class="btn btn-outline-secondary btn-lg px-3 rounded-pill" data-add-field>+</button>
+        </div>
+    </div>
+</div>
+
+<!-- saved list, rendered by scripts.js when non-empty -->
+<div id="saved_list"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="static/scripts.js?v=2.5.2"></script>
+</body>
+</html>
