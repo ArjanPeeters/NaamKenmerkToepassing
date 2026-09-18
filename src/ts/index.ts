@@ -19,6 +19,12 @@ interface SearchCand { label: string; naam: string; kenmerk?: string; toepassing
 interface DropItem { type: string; omschrijving: string; }
 
 const LS_KEY = 'naakt_saved';
+// Google Formulier -> Sheet; ID's uit de "vooraf ingevulde link" van het formulier
+const LOG_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfNL5chSX_rZkP0UFqWA25-n1DfUeB62WqePjGeNZA_05_jlA/formResponse';
+const LOG_FIELDS = {
+    naam: 'entry.1822166289', kenmerk: 'entry.235482097', toepassing: 'entry.1238919606',
+    extras: 'entry.1558030711', totaal: 'entry.591662997',
+};
 const NLSFB_EMPTY = '[geen code]';
 
 function esc(s: string): string {
@@ -200,8 +206,28 @@ class App {
         if (!this.saved.includes(name)) {
             this.saved.unshift(name);
             localStorage.setItem(LS_KEY, JSON.stringify(this.saved));
+            this.log(name);
         }
         this.render();
+    }
+
+    // ponytail: open formulier, iedereen kan rijen posten; eigen endpoint met rate-limit pas als er spam komt
+    private log(totaal: string): void {
+        const extras = this.extras
+            .filter((f) => !['', '[geen-code]'].includes(this.clean(f.value))) // zelfde filter als materialName()
+            .map((f) => `${this.omschrijvingFor(f.type)}=${f.value.trim()}`).join('; ');
+        // fetch i.p.v. sendBeacon: beacons ("ping") worden door adblockers geblokkeerd. credentials omit -> geen
+        // Google-cookies mee. Fire-and-forget: save + kopieren mogen hier nooit op falen.
+        fetch(LOG_URL, {
+            method: 'POST', mode: 'no-cors', credentials: 'omit', keepalive: true,
+            body: new URLSearchParams({
+                [LOG_FIELDS.naam]: this.naam,
+                [LOG_FIELDS.kenmerk]: this.kenmerk,
+                [LOG_FIELDS.toepassing]: this.toepassing,
+                [LOG_FIELDS.extras]: extras,
+                [LOG_FIELDS.totaal]: totaal,
+            }),
+        }).catch(() => {});
     }
 
     // ---- rendering ----
